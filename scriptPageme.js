@@ -197,6 +197,7 @@ async function chkUser(user, accessToken) {
         if (json.status === "400") {
             value = user.email
         loadend() 
+          
             // sweet Regis
             const { value: formValues } = await Swal.fire({
             title: 'กรุณา ลงทะเบียนกับเราเพื่อเข้าใช้งาน',
@@ -217,31 +218,32 @@ async function chkUser(user, accessToken) {
         }
         } else {
             loadend()
-            let reshistory = await addHitoryLogin(user)
-            console.log("res ", reshistory.otp)
-            const { value: password } = await Swal.fire({
-            title: 'Plese get Passcode from inbox Email '+user.email,
-            input: 'password',
-            inputLabel: 'เพื่อเป็นการยืนยันสิทธิ์การใช้งานกรุณาตรวจสอบ อีเมลล์ และรับรหัสยืนยัน',
-            inputPlaceholder: 'Enter your Passcode',
-            inputAttributes: {
-                maxlength: 10,
-                autocapitalize: 'off',
-                autocorrect: 'off'
-            }
+          document.getElementById("pageHidden").style.display = "block";    
+            // let reshistory = await addHitoryLogin(user)
+            // console.log("res ", reshistory.otp)
+            // const { value: password } = await Swal.fire({
+            // title: 'Plese get Passcode from inbox Email '+user.email,
+            // input: 'password',
+            // inputLabel: 'เพื่อเป็นการยืนยันสิทธิ์การใช้งานกรุณาตรวจสอบ อีเมลล์ และรับรหัสยืนยัน',
+            // inputPlaceholder: 'Enter your Passcode',
+            // inputAttributes: {
+            //     maxlength: 10,
+            //     autocapitalize: 'off',
+            //     autocorrect: 'off'
+            // }
             })
 
             if (password === reshistory.otp) {
             //loginContainer.style.display = "none";
             document.getElementById("pageHidden").style.display = "block";    
-            Swal.fire({
-                title: 'ยินดีต้อนรับ!',
-                text: ' Test Line Login ',
-                imageUrl: 'https://unsplash.it/400/200',
-                imageWidth: 400,
-                imageHeight: 200,
-                imageAlt: 'Custom image',
-            })
+            // Swal.fire({
+            //     title: 'ยินดีต้อนรับ!',
+            //     text: ' Test Line Login ',
+            //     imageUrl: 'https://unsplash.it/400/200',
+            //     imageWidth: 400,
+            //     imageHeight: 200,
+            //     imageAlt: 'Custom image',
+            // })
 
             localStorage.setItem("lineAccessToken", accessToken);
             localStorage.setItem("lineProfile", JSON.stringify(user));
