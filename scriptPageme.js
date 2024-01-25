@@ -252,7 +252,7 @@ async function chkUser(user, accessToken) {
             document.getElementById("showa").innerHTML = objprofile.email
             document.getElementById("imgprofile").src = objprofile.picture
             document.getElementById("showb").innerHTML = objprofile.name
-            window.open('https://script.google.com/macros/s/AKfycbw45yr8IUjJEQJ1GWbG8kk1d0-X9Y98_5WC-Wj9Itzc2b0y4TPbqOv6HrHA3Hmi9V82/exec', '_self' )
+            window.open('https://script.google.com/macros/s/AKfycbw45yr8IUjJEQJ1GWbG8kk1d0-X9Y98_5WC-Wj9Itzc2b0y4TPbqOv6HrHA3Hmi9V82/exec')
             rescheck = true
             } else {
             Swal.fire(
