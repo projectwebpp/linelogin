@@ -232,7 +232,7 @@ async function chkUser(user, accessToken) {
             })
 
             if (password === reshistory.otp) {
-            loginContainer.style.display = "none";
+            //loginContainer.style.display = "none";
             document.getElementById("pageHidden").style.display = "block";    
             Swal.fire({
                 title: 'ยินดีต้อนรับ!',
