@@ -234,14 +234,14 @@ async function chkUser(user, accessToken) {
             if (password === reshistory.otp) {
             // loginContainer.style.display = "none";
             document.getElementById("pageHidden").style.display = "block";    
-            Swal.fire({
-                title: 'ยินดีต้อนรับ!',
-                text: ' Test Line Login ',
-                imageUrl: 'https://unsplash.it/400/200',
-                imageWidth: 400,
-                imageHeight: 200,
-                imageAlt: 'Custom image',
-            })
+            // Swal.fire({
+            //     title: 'ยินดีต้อนรับ!',
+            //     text: ' Test Line Login ',
+            //     imageUrl: 'https://unsplash.it/400/200',
+            //     imageWidth: 400,
+            //     imageHeight: 200,
+            //     imageAlt: 'Custom image',
+            // })
 
             localStorage.setItem("lineAccessToken", accessToken);
             localStorage.setItem("lineProfile", JSON.stringify(user));
