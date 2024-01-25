@@ -217,19 +217,19 @@ async function chkUser(user, accessToken) {
         }
         } else {
             loadend()
-            let reshistory = await addHitoryLogin(user)
-            console.log("res ", reshistory.otp)
-            const { value: password } = await Swal.fire({
-            title: 'Plese get Passcode from inbox Email '+user.email,
-            input: 'password',
-            inputLabel: 'เพื่อเป็นการยืนยันสิทธิ์การใช้งานกรุณาตรวจสอบ อีเมลล์ และรับรหัสยืนยัน',
-            inputPlaceholder: 'Enter your Passcode',
-            inputAttributes: {
-                maxlength: 10,
-                autocapitalize: 'off',
-                autocorrect: 'off'
-            }
-            })
+            // let reshistory = await addHitoryLogin(user)
+            // console.log("res ", reshistory.otp)
+            // const { value: password } = await Swal.fire({
+            // title: 'Plese get Passcode from inbox Email '+user.email,
+            // input: 'password',
+            // inputLabel: 'เพื่อเป็นการยืนยันสิทธิ์การใช้งานกรุณาตรวจสอบ อีเมลล์ และรับรหัสยืนยัน',
+            // inputPlaceholder: 'Enter your Passcode',
+            // inputAttributes: {
+            //     maxlength: 10,
+            //     autocapitalize: 'off',
+            //     autocorrect: 'off'
+            // }
+            // })
 
             if (password === reshistory.otp) {
             // loginContainer.style.display = "none";
