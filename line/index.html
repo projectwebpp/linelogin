@@ -77,7 +77,7 @@
     
     function shareImage(fileId) {
       const imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
-      const shareUrl = window.location.href; // URL สำหรับแชร์ต่อ
+      const shareUrl = `https://liff.line.me/${LIFF_ID}?fileId=${fileId}&mode=share`;
       
       if (liff.isApiAvailable('shareTargetPicker')) {
         liff.shareTargetPicker([
