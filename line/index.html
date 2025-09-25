@@ -92,47 +92,21 @@
       
       if (liff.isApiAvailable('shareTargetPicker')) {
         liff.shareTargetPicker([
+          // ข้อความที่ 1: รูปภาพปกติ
+          {
+            type: 'image',
+            originalContentUrl: imageUrl,
+            previewImageUrl: imageUrl
+          },
+          // ข้อความที่ 2: Flex Message รายละเอียด
           {
             type: 'flex',
-            altText: 'แชร์รูปภาพ',
+            altText: 'รายละเอียดรูปภาพ',
             contents: {
               type: 'bubble',
-              hero: {
-                type: 'image',
-                url: imageUrl,
-                size: 'full',
-                aspectRatio: '20:13',
-                aspectMode: 'cover',
-                action: {
-                  type: 'uri',
-                  uri: imageUrl
-                }
-              },
               body: {
                 type: 'box',
                 layout: 'vertical',
-                contents: [
-                  {
-                    type: 'text',
-                    text: '📸 รูปภาพที่แชร์',
-                    weight: 'bold',
-                    size: 'lg',
-                    color: '#1DB446'
-                  },
-                  {
-                    type: 'text',
-                    text: 'คลิกรูปเพื่อดูขนาดเต็ม หรือแชร์ต่อให้เพื่อน',
-                    size: 'sm',
-                    color: '#999999',
-                    margin: 'md',
-                    wrap: true
-                  }
-                ]
-              },
-              footer: {
-                type: 'box',
-                layout: 'vertical',
-                spacing: 'sm',
                 contents: [
                   {
                     type: 'box',
@@ -162,6 +136,21 @@
                     margin: 'md'
                   },
                   {
+                    type: 'text',
+                    text: 'คลิกปุ่มด้านล่างเพื่อดูรูปเต็มหรือแชร์ต่อ',
+                    size: 'sm',
+                    color: '#999999',
+                    margin: 'md',
+                    wrap: true
+                  }
+                ]
+              },
+              footer: {
+                type: 'box',
+                layout: 'vertical',
+                spacing: 'sm',
+                contents: [
+                  {
                     type: 'button',
                     action: {
                       type: 'uri',
@@ -169,8 +158,7 @@
                       uri: imageUrl
                     },
                     style: 'primary',
-                    color: '#06C755',
-                    margin: 'md'
+                    color: '#06C755'
                   },
                   {
                     type: 'button',
