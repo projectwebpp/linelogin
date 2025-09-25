@@ -69,6 +69,7 @@
     
     function shareImage(fileId) {
       const imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+      const shareUrl = window.location.href; // URL สำหรับแชร์ต่อ
       
       if (liff.isApiAvailable('shareTargetPicker')) {
         liff.shareTargetPicker([
@@ -82,7 +83,11 @@
                 url: imageUrl,
                 size: 'full',
                 aspectRatio: '20:13',
-                aspectMode: 'cover'
+                aspectMode: 'cover',
+                action: {
+                  type: 'uri',
+                  uri: imageUrl
+                }
               },
               body: {
                 type: 'box',
@@ -97,7 +102,7 @@
                   },
                   {
                     type: 'text',
-                    text: 'คลิกเพื่อดูรูปภาพขนาดเต็ม',
+                    text: 'คลิกรูปเพื่อดูขนาดเต็ม หรือแชร์ต่อให้เพื่อน',
                     size: 'sm',
                     color: '#999999',
                     margin: 'md',
@@ -108,16 +113,26 @@
               footer: {
                 type: 'box',
                 layout: 'vertical',
+                spacing: 'sm',
                 contents: [
                   {
                     type: 'button',
                     action: {
                       type: 'uri',
-                      label: 'ดูรูปเต็ม',
+                      label: '🔗 ดูรูปเต็ม',
                       uri: imageUrl
                     },
                     style: 'primary',
                     color: '#06C755'
+                  },
+                  {
+                    type: 'button',
+                    action: {
+                      type: 'uri',
+                      label: '↗️ แชร์ต่อ',
+                      uri: shareUrl
+                    },
+                    style: 'link'
                   }
                 ]
               }
