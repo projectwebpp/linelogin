@@ -54,6 +54,14 @@
         const fileId = params.get('fileId');
         const mode = params.get('mode');
         
+        // ตรวจสอบว่าเปิดใน LINE หรือไม่
+        if (!liff.isInClient()) {
+          document.querySelector('.loading').textContent = '⚠️ กรุณาเปิดลิงก์ใน LINE';
+          document.getElementById('error').style.display = 'block';
+          document.getElementById('error').innerHTML = 'คุณต้องเปิดลิงก์นี้ใน LINE App เพื่อใช้ฟีเจอร์แชร์';
+          return;
+        }
+        
         if (mode === 'share' && fileId) {
           shareImage(fileId);
         } else {
