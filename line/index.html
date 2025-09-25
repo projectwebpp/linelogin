@@ -77,7 +77,8 @@
       });
     
     async function shareImage(fileId) {
-      const imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+      // ใช้ lh5.googleusercontent.com
+      const imageUrl = `https://lh5.googleusercontent.com/d/${fileId}`;
       const shareUrl = `https://liff.line.me/${LIFF_ID}?fileId=${fileId}&mode=share`;
       
       // ดึงข้อมูลผู้ใช้
