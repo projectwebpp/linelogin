@@ -47,6 +47,7 @@
   
   <script>
     const LIFF_ID = '1656079273-03ROPmPB'; // ใส่ LIFF ID ของคุณ
+    const BOT_ID = '@yourbot'; // ใส่ LINE Bot ID ของคุณ (เช่น @abc1234)
     
     liff.init({ liffId: LIFF_ID })
       .then(() => {
@@ -75,9 +76,18 @@
         document.getElementById('error').innerHTML = '<strong>เกิดข้อผิดพลาด:</strong><br>' + err.message;
       });
     
-    function shareImage(fileId) {
+    async function shareImage(fileId) {
       const imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
       const shareUrl = `https://liff.line.me/${LIFF_ID}?fileId=${fileId}&mode=share`;
+      
+      // ดึงข้อมูลผู้ใช้
+      let displayName = 'เพื่อน';
+      try {
+        const profile = await liff.getProfile();
+        displayName = profile.displayName;
+      } catch (err) {
+        console.error('Get Profile Error:', err);
+      }
       
       if (liff.isApiAvailable('shareTargetPicker')) {
         liff.shareTargetPicker([
@@ -124,6 +134,33 @@
                 spacing: 'sm',
                 contents: [
                   {
+                    type: 'box',
+                    layout: 'baseline',
+                    spacing: 'sm',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: '👤 แชร์โดย:',
+                        size: 'sm',
+                        color: '#aaaaaa',
+                        flex: 0
+                      },
+                      {
+                        type: 'text',
+                        text: displayName,
+                        size: 'sm',
+                        color: '#666666',
+                        weight: 'bold',
+                        flex: 0,
+                        margin: 'sm'
+                      }
+                    ]
+                  },
+                  {
+                    type: 'separator',
+                    margin: 'md'
+                  },
+                  {
                     type: 'button',
                     action: {
                       type: 'uri',
@@ -131,7 +168,8 @@
                       uri: imageUrl
                     },
                     style: 'primary',
-                    color: '#06C755'
+                    color: '#06C755',
+                    margin: 'md'
                   },
                   {
                     type: 'button',
@@ -141,6 +179,16 @@
                       uri: shareUrl
                     },
                     style: 'link'
+                  },
+                  {
+                    type: 'button',
+                    action: {
+                      type: 'uri',
+                      label: '➕ เพิ่มเพื่อนบอท',
+                      uri: `https://line.me/R/ti/p/${BOT_ID}`
+                    },
+                    style: 'link',
+                    color: '#17C950'
                   }
                 ]
               }
