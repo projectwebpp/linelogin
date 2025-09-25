@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Image</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      text-align: center; 
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      max-width: 400px;
+      width: 100%;
+    }
+    .loading { 
+      font-size: 20px; 
+      font-weight: 500;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .error {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="loading">⏳ กำลังโหลด...</div>
+    <div id="error" class="error" style="display:none;"></div>
+  </div>
+  
+  <script>
+    const LIFF_ID = '1656079273-03ROPmPB'; // ใส่ LIFF ID ของคุณ
+    
+    liff.init({ liffId: LIFF_ID })
+      .then(() => {
+        const params = new URLSearchParams(window.location.search);
+        const fileId = params.get('fileId');
+        const mode = params.get('mode');
+        
+        if (mode === 'share' && fileId) {
+          shareImage(fileId);
+        } else {
+          document.querySelector('.loading').textContent = '❌ ไม่พบข้อมูล';
+        }
+      })
+      .catch(err => {
+        console.error('LIFF Init Error:', err);
+        document.querySelector('.loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').innerHTML = '<strong>เกิดข้อผิดพลาด:</strong><br>' + err.message;
+      });
+    
+    function shareImage(fileId) {
+      const imageUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+      
+      if (liff.isApiAvailable('shareTargetPicker')) {
+        liff.shareTargetPicker([
+          {
+            type: 'flex',
+            altText: 'แชร์รูปภาพ',
+            contents: {
+              type: 'bubble',
+              hero: {
+                type: 'image',
+                url: imageUrl,
+                size: 'full',
+                aspectRatio: '20:13',
+                aspectMode: 'cover'
+              },
+              body: {
+                type: 'box',
+                layout: 'vertical',
+                contents: [
+                  {
+                    type: 'text',
+                    text: '📸 รูปภาพที่แชร์',
+                    weight: 'bold',
+                    size: 'lg',
+                    color: '#1DB446'
+                  },
+                  {
+                    type: 'text',
+                    text: 'คลิกเพื่อดูรูปภาพขนาดเต็ม',
+                    size: 'sm',
+                    color: '#999999',
+                    margin: 'md',
+                    wrap: true
+                  }
+                ]
+              },
+              footer: {
+                type: 'box',
+                layout: 'vertical',
+                contents: [
+                  {
+                    type: 'button',
+                    action: {
+                      type: 'uri',
+                      label: 'ดูรูปเต็ม',
+                      uri: imageUrl
+                    },
+                    style: 'primary',
+                    color: '#06C755'
+                  }
+                ]
+              }
+            }
+          }
+        ])
+        .then(() => {
+          document.querySelector('.loading').textContent = '✓ แชร์สำเร็จ';
+          setTimeout(() => liff.closeWindow(), 1000);
+        })
+        .catch(err => {
+          console.error('Share Error:', err);
+          document.querySelector('.loading').style.display = 'none';
+          document.getElementById('error').style.display = 'block';
+          document.getElementById('error').innerHTML = '<strong>ไม่สามารถแชร์ได้:</strong><br>' + err.message;
+        });
+      } else {
+        document.querySelector('.loading').textContent = '❌ ไม่รองรับ Share Target Picker';
+      }
+    }
+  </script>
+</body>
+</html>
