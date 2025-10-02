@@ -24,6 +24,9 @@
     body.tiktok { 
       background: linear-gradient(135deg, #000000 0%, #EE1D52 100%);
     }
+    body.facebook { 
+      background: linear-gradient(135deg, #1877F2 0%, #0A5FC8 100%);
+    }
     .container {
       max-width: 400px;
       width: 100%;
@@ -61,6 +64,8 @@
         return 'youtube';
       } else if (url.includes('tiktok.com') || url.includes('vt.tiktok.com')) {
         return 'tiktok';
+      } else if (url.includes('facebook.com') || url.includes('fb.watch')) {
+        return 'facebook';
       }
       return 'unknown';
     }
@@ -76,6 +81,21 @@
     function getTikTokVideoId(url) {
       const match = url.match(/\/video\/(\d+)/);
       return match ? match[1] : null;
+    }
+    
+    // ฟังก์ชันดึง Video ID จาก Facebook
+    function getFacebookVideoId(url) {
+      // สำหรับลิงค์รูปแบบ: facebook.com/.../videos/123456789/
+      const videoPattern = /\/videos\/(\d+)/;
+      const videoMatch = url.match(videoPattern);
+      if (videoMatch) return videoMatch[1];
+      
+      // สำหรับลิงค์รูปแบบ: fb.watch/abc123/
+      const watchPattern = /fb\.watch\/([\w-]+)/;
+      const watchMatch = url.match(watchPattern);
+      if (watchMatch) return `fb_${watchMatch[1]}`;
+      
+      return null;
     }
     
     liff.init({ liffId: LIFF_ID })
@@ -103,6 +123,10 @@
             document.body.classList.add('tiktok');
             const videoId = getTikTokVideoId(decodedUrl);
             shareTikTok(videoId, decodedUrl);
+          } else if (platform === 'facebook') {
+            document.body.classList.add('facebook');
+            const videoId = getFacebookVideoId(decodedUrl);
+            shareFacebook(videoId, decodedUrl);
           } else {
             document.querySelector('.loading').textContent = '❌ ไม่รองรับ URL นี้';
           }
@@ -278,7 +302,6 @@
     }
     
     async function shareTikTok(videoId, tiktokUrl) {
-      // TikTok ไม่มี API thumbnail โดยตรง ใช้ placeholder หรือ default image
       const thumbnailUrl = 'https://sf16-website-login.neutral.ttwstatic.com/obj/tiktok_web_login_static/tiktok/webapp/main/webapp-desktop/8152caf0c8e8bc67ae0d.png';
       const shareUrl = `https://liff.line.me/${LIFF_ID}?url=${encodeURIComponent(tiktokUrl)}&mode=share`;
       
@@ -426,6 +449,166 @@
                         style: 'link',
                         height: 'sm',
                         color: '#69C9D0'
+                      },
+                      {
+                        type: 'button',
+                        action: {
+                          type: 'uri',
+                          label: '➕ เพิ่มเพื่อน',
+                          uri: `https://line.me/R/ti/p/${BOT_ID}`
+                        },
+                        style: 'link',
+                        height: 'sm',
+                        color: '#FF6B6B'
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ])
+        .then(() => {
+          document.querySelector('.loading').textContent = '✓ แชร์สำเร็จ';
+          setTimeout(() => liff.closeWindow(), 1000);
+        })
+        .catch(err => {
+          console.error('Share Error:', err);
+          document.querySelector('.loading').style.display = 'none';
+          document.getElementById('error').style.display = 'block';
+          document.getElementById('error').innerHTML = '<strong>ไม่สามารถแชร์ได้:</strong><br>' + err.message;
+        });
+      } else {
+        document.querySelector('.loading').textContent = '❌ ไม่รองรับ Share Target Picker';
+      }
+    }
+    
+    async function shareFacebook(videoId, facebookUrl) {
+      const thumbnailUrl = 'https://static.xx.fbcdn.net/rsrc.php/y1/r/4lCu2zih0ca.svg';
+      const shareUrl = `https://liff.line.me/${LIFF_ID}?url=${encodeURIComponent(facebookUrl)}&mode=share`;
+      
+      let displayName = 'เพื่อน';
+      try {
+        const profile = await liff.getProfile();
+        displayName = profile.displayName;
+      } catch (err) {
+        console.error('Get Profile Error:', err);
+      }
+      
+      if (liff.isApiAvailable('shareTargetPicker')) {
+        liff.shareTargetPicker([
+          {
+            type: 'flex',
+            altText: '📘 Facebook Video แชร์โดย ' + displayName,
+            contents: {
+              type: 'bubble',
+              hero: {
+                type: 'image',
+                url: 'https://static.xx.fbcdn.net/rsrc.php/y1/r/4lCu2zih0ca.svg',
+                size: 'full',
+                aspectRatio: '20:13',
+                aspectMode: 'cover',
+                action: {
+                  type: 'uri',
+                  uri: facebookUrl
+                }
+              },
+              body: {
+                type: 'box',
+                layout: 'vertical',
+                contents: [
+                  {
+                    type: 'text',
+                    text: 'Facebook Video',
+                    weight: 'bold',
+                    size: 'xl',
+                    color: '#1877F2'
+                  },
+                  {
+                    type: 'box',
+                    layout: 'baseline',
+                    spacing: 'sm',
+                    margin: 'md',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: '👤 แชร์โดย:',
+                        size: 'sm',
+                        color: '#aaaaaa',
+                        flex: 0
+                      },
+                      {
+                        type: 'text',
+                        text: displayName,
+                        size: 'sm',
+                        color: '#666666',
+                        weight: 'bold',
+                        flex: 0,
+                        margin: 'sm'
+                      }
+                    ]
+                  },
+                  {
+                    type: 'separator',
+                    margin: 'md'
+                  },
+                  {
+                    type: 'text',
+                    text: 'คลิกรูปภาพหรือปุ่มด้านล่างเพื่อดูวิดีโอ',
+                    size: 'sm',
+                    color: '#999999',
+                    margin: 'md',
+                    wrap: true
+                  }
+                ]
+              },
+              footer: {
+                type: 'box',
+                layout: 'vertical',
+                spacing: 'sm',
+                contents: [
+                  {
+                    type: 'button',
+                    action: {
+                      type: 'uri',
+                      label: '📘 เปิด Facebook',
+                      uri: facebookUrl
+                    },
+                    style: 'primary',
+                    color: '#1877F2',
+                    height: 'sm'
+                  },
+                  {
+                    type: 'button',
+                    action: {
+                      type: 'uri',
+                      label: '📋 คัดลอกลิงค์',
+                      uri: `https://line.me/R/share?text=${encodeURIComponent(shareUrl)}`
+                    },
+                    style: 'link',
+                    height: 'sm',
+                    color: '#06C755'
+                  },
+                  {
+                    type: 'separator',
+                    margin: 'md'
+                  },
+                  {
+                    type: 'box',
+                    layout: 'horizontal',
+                    spacing: 'sm',
+                    margin: 'md',
+                    contents: [
+                      {
+                        type: 'button',
+                        action: {
+                          type: 'uri',
+                          label: '↗️ แชร์ต่อ',
+                          uri: shareUrl
+                        },
+                        style: 'link',
+                        height: 'sm',
+                        color: '#17C950'
                       },
                       {
                         type: 'button',
