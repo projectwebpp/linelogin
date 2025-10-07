@@ -54,7 +54,6 @@
   
   <script>
     const LIFF_ID = '1656032875-o6mwvLAQ';
-    const BOT_ID = '@allaboutitscript';
     
     liff.init({ liffId: LIFF_ID })
       .then(() => {
@@ -63,7 +62,6 @@
         const type = params.get('type');
         const flexId = params.get('flexId');
         const data = params.get('data');
-        const altText = params.get('altText');
         
         if (!liff.isInClient()) {
           document.querySelector('.loading').textContent = '⚠️ กรุณาเปิดลิงก์ใน LINE';
@@ -73,7 +71,7 @@
         }
         
         if (mode === 'share' && type === 'flex') {
-          shareFlexMessage(flexId, data, altText);
+          shareFlexMessage(flexId, data);
         } else {
           document.querySelector('.loading').textContent = '❌ ไม่พบข้อมูลสำหรับแชร์';
         }
@@ -85,7 +83,7 @@
         document.getElementById('error').innerHTML = '<strong>เกิดข้อผิดพลาด:</strong><br>' + err.message;
       });
     
-    async function shareFlexMessage(flexId, flexData, altText = 'Flex Message') {
+    async function shareFlexMessage(flexId, flexData) {
       let displayName = 'เพื่อน';
       try {
         const profile = await liff.getProfile();
@@ -95,23 +93,33 @@
       }
       
       let flexContent;
+      let altText = 'Flex Message';
+      
       try {
         if (flexData) {
-          flexContent = JSON.parse(decodeURIComponent(flexData));
+          const parsedData = JSON.parse(decodeURIComponent(flexData));
+          if (parsedData.type === 'flex') {
+            flexContent = parsedData.contents;
+            altText = parsedData.altText || altText;
+          } else {
+            flexContent = parsedData;
+          }
         } else {
-          // ถ้าไม่มี flexData ให้ใช้ template มาตรฐาน
-          flexContent = createDefaultFlexMessage(displayName, flexId);
+          throw new Error('ไม่พบข้อมูล Flex Message');
         }
       } catch (e) {
         console.error('Flex Data Parse Error:', e);
-        flexContent = createDefaultFlexMessage(displayName, flexId);
+        document.querySelector('.loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').innerHTML = '<strong>ข้อผิดพลาด:</strong><br>ไม่สามารถประมวลผล Flex Message ได้';
+        return;
       }
       
       if (liff.isApiAvailable('shareTargetPicker')) {
         liff.shareTargetPicker([
           {
             type: 'flex',
-            altText: altText || `Flex Message แชร์โดย ${displayName}`,
+            altText: altText,
             contents: flexContent
           }
         ])
@@ -130,86 +138,6 @@
       } else {
         document.querySelector('.loading').textContent = '❌ ไม่รองรับ Share Target Picker';
       }
-    }
-    
-    function createDefaultFlexMessage(displayName, flexId) {
-      return {
-        type: 'bubble',
-        hero: {
-          type: 'image',
-          url: 'https://developers.line.biz/assets/img/og-image-line-messaging-api-7d18d5265b9a0a9596c80b767e97c0e4.png',
-          size: 'full',
-          aspectRatio: '20:13',
-          aspectMode: 'cover'
-        },
-        body: {
-          type: 'box',
-          layout: 'vertical',
-          contents: [
-            {
-              type: 'text',
-              text: '📨 Flex Message',
-              weight: 'bold',
-              size: 'xl',
-              color: '#0066CC'
-            },
-            {
-              type: 'box',
-              layout: 'baseline',
-              spacing: 'sm',
-              margin: 'md',
-              contents: [
-                {
-                  type: 'text',
-                  text: '👤 แชร์โดย:',
-                  size: 'sm',
-                  color: '#aaaaaa',
-                  flex: 0
-                },
-                {
-                  type: 'text',
-                  text: displayName,
-                  size: 'sm',
-                  color: '#666666',
-                  weight: 'bold',
-                  flex: 0,
-                  margin: 'sm'
-                }
-              ]
-            },
-            {
-              type: 'separator',
-              margin: 'md'
-            },
-            {
-              type: 'text',
-              text: 'Flex Message นี้ถูกแชร์ผ่าน LIFF Share System',
-              size: 'sm',
-              color: '#999999',
-              margin: 'md',
-              wrap: true
-            }
-          ]
-        },
-        footer: {
-          type: 'box',
-          layout: 'vertical',
-          spacing: 'sm',
-          contents: [
-            {
-              type: 'button',
-              action: {
-                type: 'uri',
-                label: '➕ เพิ่มเพื่อนบอท',
-                uri: `https://line.me/R/ti/p/${BOT_ID}`
-              },
-              style: 'primary',
-              color: '#06C755',
-              height: 'sm'
-            }
-          ]
-        }
-      };
     }
   </script>
 </body>
