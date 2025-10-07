@@ -31,14 +31,7 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
     }
-    .error {
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-radius: 10px;
-      margin-top: 20px;
-      backdrop-filter: blur(10px);
-    }
-    .success {
+    .error, .success {
       background: rgba(255,255,255,0.1);
       padding: 20px;
       border-radius: 10px;
@@ -49,6 +42,15 @@
       font-size: 48px;
       margin-bottom: 10px;
     }
+    .debug {
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-size: 12px;
+      text-align: left;
+      word-break: break-all;
+    }
   </style>
 </head>
 <body>
@@ -57,86 +59,143 @@
     <div class="loading">⏳ กำลังโหลด...</div>
     <div id="error" class="error" style="display:none;"></div>
     <div id="success" class="success" style="display:none;"></div>
+    <div id="debug" class="debug" style="display:none;"></div>
   </div>
   
   <script>
     const LIFF_ID = '1656032875-o6mwvLAQ';
-    // Google Drive Folder ID สำหรับดึงข้อมูล Flex
-    const FOLDER_ID = '1Gj_iG2lsOyrKCXcPZWTffTm7GHXhhq3G';
+    
+    // ⚠️ แก้ไข URL นี้เป็น Web App URL ของคุณ
+    // ตัวอย่าง: https://script.google.com/macros/s/AKfycbxxx.../exec
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxnOgK17_ZsFmmZUJkRV8g4I8KULa9PSYkYti2qhlilWOQDByYZ0k4cNZlw-V_gGrl4Gg/exec';
+    
+    // Debug mode
+    const DEBUG = true;
+    
+    function debugLog(message, data = null) {
+      console.log(message, data);
+      if (DEBUG) {
+        const debugDiv = document.getElementById('debug');
+        debugDiv.style.display = 'block';
+        debugDiv.innerHTML += `<div><strong>${message}</strong></div>`;
+        if (data) {
+          debugDiv.innerHTML += `<div style="color: #90EE90;">${JSON.stringify(data, null, 2)}</div>`;
+        }
+        debugDiv.innerHTML += '<hr style="border-color: rgba(255,255,255,0.2);">';
+      }
+    }
+    
+    debugLog('🚀 Starting LIFF initialization...');
     
     liff.init({ liffId: LIFF_ID })
       .then(() => {
+        debugLog('✅ LIFF initialized successfully');
+        
         const params = new URLSearchParams(window.location.search);
         const mode = params.get('mode');
         const type = params.get('type');
         const flexId = params.get('flexId');
         
+        debugLog('📋 URL Parameters', { mode, type, flexId });
+        
         // ตรวจสอบว่าเปิดใน LINE หรือไม่
         if (!liff.isInClient()) {
+          debugLog('⚠️ Not in LINE client');
           showError('⚠️ กรุณาเปิดลิงก์ใน LINE', 'คุณต้องเปิดลิงก์นี้ใน LINE App เพื่อใช้ฟีเจอร์แชร์');
           return;
         }
         
+        debugLog('✅ Running in LINE client');
+        
         // ตรวจสอบ parameters
-        if (mode === 'share' && type === 'flex' && flexId) {
-          // ใช้วิธีดึงข้อมูลจาก Google Drive แทน
-          loadFlexFromDrive(flexId);
+        if (!mode || !type || !flexId) {
+          debugLog('❌ Missing required parameters');
+          showError('❌ ข้อมูลไม่ครบถ้วน', `ไม่พบข้อมูลที่จำเป็น<br>mode: ${mode}<br>type: ${type}<br>flexId: ${flexId}`);
+          return;
+        }
+        
+        if (mode === 'share' && type === 'flex') {
+          debugLog('🔄 Starting to load Flex data...');
+          loadFlexFromServer(flexId);
         } else {
-          showError('❌ ข้อมูลไม่ครบถ้วน', 'ไม่พบข้อมูลที่จำเป็นสำหรับการแชร์');
+          debugLog('❌ Invalid mode or type');
+          showError('❌ ข้อมูลไม่ถูกต้อง', `mode: ${mode}, type: ${type}`);
         }
       })
       .catch(err => {
-        console.error('LIFF Init Error:', err);
+        debugLog('❌ LIFF Init Error', err);
         showError('❌ เกิดข้อผิดพลาด', err.message);
       });
     
-    // ฟังก์ชันโหลด Flex จาก Google Drive
-    async function loadFlexFromDrive(flexId) {
+    // ฟังก์ชันโหลด Flex จาก Google Apps Script Web App
+    async function loadFlexFromServer(flexId) {
       try {
-        // สร้าง URL สำหรับดึงไฟล์จาก Google Drive
-        const driveUrl = `https://drive.google.com/uc?export=download&id=${FOLDER_ID}/flex_${flexId}.txt`;
+        debugLog('📡 Fetching data from server...', { flexId, url: WEB_APP_URL });
         
-        // ในกรณีจริง คุณควรใช้ Google Apps Script Web App เพื่อดึงข้อมูล
-        // ตัวอย่างนี้จะใช้วิธีอื่นแทน
+        if (WEB_APP_URL === 'YOUR_WEB_APP_URL_HERE') {
+          throw new Error('❌ กรุณาตั้งค่า WEB_APP_URL ในโค้ด HTML');
+        }
         
-        // วิธีที่แนะนำ: ใช้ Google Apps Script Web App
-        const scriptUrl = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
-        const response = await fetch(`${scriptUrl}?action=getFlexData&flexId=${flexId}`);
+        const url = `${WEB_APP_URL}?action=getFlexData&flexId=${encodeURIComponent(flexId)}`;
+        debugLog('🌐 Request URL', { url });
+        
+        const response = await fetch(url);
+        debugLog('📥 Response received', { 
+          status: response.status, 
+          ok: response.ok 
+        });
         
         if (!response.ok) {
-          throw new Error('ไม่สามารถโหลดข้อมูลได้');
+          throw new Error(`HTTP Error: ${response.status}`);
         }
         
         const data = await response.json();
+        debugLog('📦 Data parsed', data);
         
         if (data.success) {
+          debugLog('✅ Data loaded successfully');
           shareFlexMessage(data.flexJson, data.altText);
         } else {
           throw new Error(data.error || 'ไม่พบข้อมูล Flex Message');
         }
         
       } catch (error) {
-        console.error('Load Flex Error:', error);
-        showError('❌ โหลดข้อมูลล้มเหลว', 'ไม่สามารถโหลด Flex Message ได้<br>กรุณาลองใหม่อีกครั้ง');
+        debugLog('❌ Load Flex Error', { 
+          message: error.message, 
+          stack: error.stack 
+        });
+        showError('❌ โหลดข้อมูลล้มเหลว', 
+          `${error.message}<br><br>กรุณาตรวจสอบ:<br>
+          1. Web App URL ถูกต้อง<br>
+          2. Web App ได้ Deploy แล้ว<br>
+          3. Flex ID ถูกต้อง`
+        );
       }
     }
     
     // ฟังก์ชันแชร์ Flex Message
     async function shareFlexMessage(flexJson, altText = 'Flex Message') {
+      debugLog('🎯 Starting share process...', { altText });
+      
       let displayName = 'เพื่อน';
       
       try {
         const profile = await liff.getProfile();
         displayName = profile.displayName;
+        debugLog('👤 User profile', { displayName });
       } catch (err) {
-        console.error('Get Profile Error:', err);
+        debugLog('⚠️ Get Profile Error', err);
       }
       
       let flexContent;
       
       try {
+        debugLog('🔄 Parsing Flex JSON...');
+        
         if (typeof flexJson === 'string') {
           const parsedData = JSON.parse(flexJson);
+          debugLog('📄 Parsed JSON', parsedData);
+          
           if (parsedData.type === 'flex') {
             flexContent = parsedData.contents;
             altText = parsedData.altText || altText;
@@ -146,42 +205,58 @@
         } else {
           flexContent = flexJson;
         }
+        
+        debugLog('✅ Flex content ready', { 
+          type: flexContent.type,
+          altText: altText 
+        });
+        
       } catch (e) {
-        console.error('Flex Data Parse Error:', e);
+        debugLog('❌ Parse Error', e);
         showError('❌ ข้อผิดพลาด', 'ไม่สามารถประมวลผล Flex Message ได้');
         return;
       }
       
       // ตรวจสอบว่ารองรับ Share Target Picker หรือไม่
-      if (liff.isApiAvailable('shareTargetPicker')) {
-        document.querySelector('.loading').innerHTML = '📤 กำลังเปิดหน้าแชร์...';
+      if (!liff.isApiAvailable('shareTargetPicker')) {
+        debugLog('❌ shareTargetPicker not available');
+        showError('❌ ไม่รองรับฟีเจอร์นี้', 'เวอร์ชันของ LINE ไม่รองรับการแชร์<br>กรุณาอัพเดท LINE App');
+        return;
+      }
+      
+      debugLog('✅ shareTargetPicker is available');
+      document.querySelector('.loading').innerHTML = '📤 กำลังเปิดหน้าแชร์...';
+      
+      try {
+        debugLog('🚀 Opening share target picker...');
         
-        liff.shareTargetPicker([
+        await liff.shareTargetPicker([
           {
             type: 'flex',
             altText: altText,
             contents: flexContent
           }
-        ])
-        .then(() => {
-          hideLoading();
-          showSuccess('✅ แชร์ Flex Message สำเร็จ!');
-          setTimeout(() => liff.closeWindow(), 2000);
-        })
-        .catch(err => {
-          console.error('Share Error:', err);
-          
-          // ตรวจสอบว่า user ยกเลิกการแชร์หรือไม่
-          if (err.message && err.message.includes('cancel')) {
-            showError('ℹ️ ยกเลิกการแชร์', 'คุณได้ยกเลิกการแชร์ Flex Message');
-          } else {
-            showError('❌ ไม่สามารถแชร์ได้', err.message || 'เกิดข้อผิดพลาดในการแชร์');
-          }
-          
-          setTimeout(() => liff.closeWindow(), 3000);
-        });
-      } else {
-        showError('❌ ไม่รองรับฟีเจอร์นี้', 'เวอร์ชันของ LINE ไม่รองรับการแชร์<br>กรุณาอัพเดท LINE App');
+        ]);
+        
+        debugLog('✅ Share successful');
+        hideLoading();
+        showSuccess('✅ แชร์ Flex Message สำเร็จ!');
+        setTimeout(() => {
+          debugLog('🔒 Closing window...');
+          liff.closeWindow();
+        }, 2000);
+        
+      } catch (err) {
+        debugLog('❌ Share Error', err);
+        
+        // ตรวจสอบว่า user ยกเลิกการแชร์หรือไม่
+        if (err.message && (err.message.includes('cancel') || err.message.includes('closed'))) {
+          showError('ℹ️ ยกเลิกการแชร์', 'คุณได้ยกเลิกการแชร์ Flex Message');
+        } else {
+          showError('❌ ไม่สามารถแชร์ได้', err.message || 'เกิดข้อผิดพลาดในการแชร์');
+        }
+        
+        setTimeout(() => liff.closeWindow(), 3000);
       }
     }
     
@@ -199,6 +274,7 @@
         <strong>${title}</strong><br>
         <div style="margin-top: 10px; font-size: 14px;">${message}</div>
       `;
+      debugLog('🔴 Error displayed', { title, message });
     }
     
     function showSuccess(message) {
@@ -210,6 +286,7 @@
         <strong>${message}</strong><br>
         <div style="margin-top: 10px; font-size: 14px;">กำลังปิดหน้าต่าง...</div>
       `;
+      debugLog('🟢 Success displayed', { message });
     }
   </script>
 </body>
