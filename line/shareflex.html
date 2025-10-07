@@ -5,168 +5,404 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Share Flex Message</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body { 
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       text-align: center; 
-      padding: 40px 20px;
-      background: linear-gradient(135deg, #0066CC 0%, #004499 100%);
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
       min-height: 100vh;
-      margin: 0;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
-    .container {
-      max-width: 400px;
+
+    .background-pattern {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
+      height: 100%;
+      opacity: 0.1;
+      background-image: 
+        repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.1) 35px, rgba(255,255,255,.1) 70px);
+      pointer-events: none;
+      z-index: 0;
     }
+
+    .container {
+      position: relative;
+      max-width: 420px;
+      width: 90%;
+      padding: 40px 30px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      border-radius: 30px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      z-index: 1;
+    }
+
+    .user-greeting {
+      font-size: 16px;
+      font-weight: 300;
+      margin-bottom: 10px;
+      opacity: 0;
+      animation: fadeInDown 0.6s ease forwards;
+      animation-delay: 0.2s;
+    }
+
+    .user-name {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 30px;
+      opacity: 0;
+      animation: fadeInDown 0.6s ease forwards;
+      animation-delay: 0.4s;
+    }
+
+    .icon {
+      font-size: 64px;
+      margin-bottom: 20px;
+      opacity: 0;
+      animation: bounceIn 0.8s ease forwards;
+      animation-delay: 0.6s;
+    }
+
     .loading { 
-      font-size: 20px; 
-      font-weight: 500;
-      animation: pulse 1.5s ease-in-out infinite;
+      font-size: 18px; 
+      font-weight: 400;
+      opacity: 0;
+      animation: fadeIn 0.6s ease forwards;
+      animation-delay: 0.8s;
     }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
+
+    @keyframes fadeInDown {
+      from { 
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to { 
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes bounceIn {
+      0% {
+        opacity: 0;
+        transform: scale(0.3);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.05);
+      }
+      70% {
+        transform: scale(0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      margin-left: 10px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      vertical-align: middle;
+    }
+
     .error, .success {
-      background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 30px;
+      border-radius: 20px;
       margin-top: 20px;
       backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      animation: slideUp 0.5s ease forwards;
     }
-    .icon {
-      font-size: 48px;
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .error .icon { color: #ff6b6b; }
+    .success .icon { color: #51cf66; }
+
+    .message-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-top: 15px;
       margin-bottom: 10px;
+    }
+
+    .message-text {
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 1.6;
+      opacity: 0.9;
+    }
+
+    /* Loading Overlay */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .loading-content {
+      text-align: center;
+      padding: 40px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .loading-content .icon {
+      font-size: 72px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { 
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% { 
+        transform: scale(1.1);
+        opacity: 0.8;
+      }
+    }
+
+    .loading-content .text {
+      font-size: 20px;
+      font-weight: 500;
+      margin-top: 20px;
+    }
+
+    .loading-content .subtext {
+      font-size: 14px;
+      font-weight: 300;
+      margin-top: 10px;
+      opacity: 0.8;
+    }
+
+    /* Progress dots */
+    .loading-dots {
+      display: inline-block;
+      margin-left: 5px;
+    }
+
+    .loading-dots span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: white;
+      margin: 0 2px;
+      animation: loadingDots 1.4s infinite ease-in-out both;
+    }
+
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes loadingDots {
+      0%, 80%, 100% { 
+        opacity: 0.3;
+        transform: scale(0.8);
+      }
+      40% { 
+        opacity: 1;
+        transform: scale(1);
+      }
     }
   </style>
 </head>
 <body>
+  <div class="background-pattern"></div>
+  
   <div class="container">
+    <div class="user-greeting" id="greeting">สวัสดี</div>
+    <div class="user-name" id="userName">กำลังโหลด...</div>
     <div class="icon">📨</div>
-    <div class="loading">⏳ กำลังโหลด...</div>
+    <div class="loading" id="loadingText">
+      กำลังโหลดข้อมูล
+      <div class="loading-dots">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
     <div id="error" class="error" style="display:none;"></div>
     <div id="success" class="success" style="display:none;"></div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-content">
+      <div class="icon">📤</div>
+      <div class="text">กำลังเปิดหน้าแชร์</div>
+      <div class="subtext">กรุณารอสักครู่...</div>
+    </div>
   </div>
   
   <script>
     const LIFF_ID = '1656032875-o6mwvLAQ';
-    
-    // ⚠️ แก้ไข URL นี้เป็น Web App URL ของคุณ
-    // ตัวอย่าง: https://script.google.com/macros/s/AKfycbxxx.../exec
     const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxnOgK17_ZsFmmZUJkRV8g4I8KULa9PSYkYti2qhlilWOQDByYZ0k4cNZlw-V_gGrl4Gg/exec';
-    
-    // Debug mode - ปิดการแสดง log
     const DEBUG = false;
+
+    let userDisplayName = 'เพื่อน';
     
     function debugLog(message, data = null) {
-      // Log เฉพาะใน console (ไม่แสดงบนหน้าจอ)
-      if (DEBUG) {
-        console.log(message, data);
+      if (DEBUG) console.log(message, data);
+    }
+
+    // แสดง Loading Overlay
+    function showLoadingOverlay(text = 'กำลังประมวลผล', subtext = 'กรุณารอสักครู่...') {
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.querySelector('.text').textContent = text;
+      overlay.querySelector('.subtext').textContent = subtext;
+      overlay.classList.add('active');
+    }
+
+    // ซ่อน Loading Overlay
+    function hideLoadingOverlay() {
+      document.getElementById('loadingOverlay').classList.remove('active');
+    }
+
+    // อัพเดทชื่อผู้ใช้
+    async function updateUserName() {
+      try {
+        const profile = await liff.getProfile();
+        userDisplayName = profile.displayName;
+        
+        const hour = new Date().getHours();
+        let greeting = 'สวัสดี';
+        if (hour < 12) greeting = 'สวัสดีตอนเช้า';
+        else if (hour < 18) greeting = 'สวัสดีตอนบ่าย';
+        else greeting = 'สวัสดีตอนเย็น';
+        
+        document.getElementById('greeting').textContent = greeting;
+        document.getElementById('userName').textContent = userDisplayName;
+      } catch (err) {
+        console.error('Get Profile Error:', err);
+        document.getElementById('userName').textContent = 'ผู้ใช้ LINE';
       }
     }
     
     liff.init({ liffId: LIFF_ID })
-      .then(() => {
+      .then(async () => {
         debugLog('✅ LIFF initialized successfully');
+        
+        // อัพเดทชื่อผู้ใช้
+        await updateUserName();
         
         const params = new URLSearchParams(window.location.search);
         const mode = params.get('mode');
         const type = params.get('type');
         const flexId = params.get('flexId');
         
-        // ตรวจสอบว่าเปิดใน LINE หรือไม่
         if (!liff.isInClient()) {
           showError('⚠️ กรุณาเปิดลิงก์ใน LINE', 'คุณต้องเปิดลิงก์นี้ใน LINE App เพื่อใช้ฟีเจอร์แชร์');
           return;
         }
         
-        // ตรวจสอบ parameters
         if (!mode || !type || !flexId) {
-          showError('❌ ข้อมูลไม่ครบถ้วน', `ไม่พบข้อมูลที่จำเป็น<br>mode: ${mode}<br>type: ${type}<br>flexId: ${flexId}`);
+          showError('❌ ข้อมูลไม่ครบถ้วน', 'ไม่พบข้อมูลที่จำเป็นสำหรับการแชร์');
           return;
         }
         
         if (mode === 'share' && type === 'flex') {
           loadFlexFromServer(flexId);
         } else {
-          showError('❌ ข้อมูลไม่ถูกต้อง', `mode: ${mode}, type: ${type}`);
+          showError('❌ ข้อมูลไม่ถูกต้อง', 'รูปแบบข้อมูลไม่ถูกต้อง');
         }
       })
       .catch(err => {
         showError('❌ เกิดข้อผิดพลาด', err.message);
       });
     
-    // ฟังก์ชันโหลด Flex จาก Google Apps Script Web App
     async function loadFlexFromServer(flexId) {
       try {
-        
-        if (WEB_APP_URL === 'YOUR_WEB_APP_URL_HERE') {
-          throw new Error('❌ กรุณาตั้งค่า WEB_APP_URL ในโค้ด HTML');
-        }
+        document.getElementById('loadingText').innerHTML = 'กำลังโหลด Flex Message<div class="loading-dots"><span></span><span></span><span></span></div>';
         
         const url = `${WEB_APP_URL}?action=getFlexData&flexId=${encodeURIComponent(flexId)}`;
-        debugLog('🌐 Request URL', { url });
-        
         const response = await fetch(url);
-        debugLog('📥 Response received', { 
-          status: response.status, 
-          ok: response.ok 
-        });
         
         if (!response.ok) {
           throw new Error(`HTTP Error: ${response.status}`);
         }
         
         const data = await response.json();
-        debugLog('📦 Data parsed', data);
         
         if (data.success) {
-          debugLog('✅ Data loaded successfully');
           shareFlexMessage(data.flexJson, data.altText);
         } else {
           throw new Error(data.error || 'ไม่พบข้อมูล Flex Message');
         }
         
       } catch (error) {
-        debugLog('❌ Load Flex Error', { 
-          message: error.message, 
-          stack: error.stack 
-        });
         showError('❌ โหลดข้อมูลล้มเหลว', 
           `${error.message}<br><br>กรุณาตรวจสอบ:<br>
-          1. Web App URL ถูกต้อง<br>
-          2. Web App ได้ Deploy แล้ว<br>
-          3. Flex ID ถูกต้อง`
+          • Web App URL ถูกต้อง<br>
+          • Flex ID ถูกต้อง<br>
+          • มีสิทธิ์เข้าถึงข้อมูล`
         );
       }
     }
     
-    // ฟังก์ชันแชร์ Flex Message
     async function shareFlexMessage(flexJson, altText = 'Flex Message') {
-      debugLog('🎯 Starting share process...', { altText });
-      
-      let displayName = 'เพื่อน';
-      
-      try {
-        const profile = await liff.getProfile();
-        displayName = profile.displayName;
-        debugLog('👤 User profile', { displayName });
-      } catch (err) {
-        debugLog('⚠️ Get Profile Error', err);
-      }
-      
       let flexContent;
       
       try {
-        debugLog('🔄 Parsing Flex JSON...');
-        
         if (typeof flexJson === 'string') {
           const parsedData = JSON.parse(flexJson);
-          debugLog('📄 Parsed JSON', parsedData);
           
           if (parsedData.type === 'flex') {
             flexContent = parsedData.contents;
@@ -178,30 +414,21 @@
           flexContent = flexJson;
         }
         
-        debugLog('✅ Flex content ready', { 
-          type: flexContent.type,
-          altText: altText 
-        });
-        
       } catch (e) {
-        debugLog('❌ Parse Error', e);
         showError('❌ ข้อผิดพลาด', 'ไม่สามารถประมวลผล Flex Message ได้');
         return;
       }
       
-      // ตรวจสอบว่ารองรับ Share Target Picker หรือไม่
       if (!liff.isApiAvailable('shareTargetPicker')) {
-        debugLog('❌ shareTargetPicker not available');
         showError('❌ ไม่รองรับฟีเจอร์นี้', 'เวอร์ชันของ LINE ไม่รองรับการแชร์<br>กรุณาอัพเดท LINE App');
         return;
       }
       
-      debugLog('✅ shareTargetPicker is available');
-      document.querySelector('.loading').innerHTML = '📤 กำลังเปิดหน้าแชร์...';
+      // แสดง Loading Overlay
+      hideLoading();
+      showLoadingOverlay('กำลังเปิดหน้าแชร์', 'เลือกเพื่อนหรือกลุ่มที่ต้องการแชร์');
       
       try {
-        debugLog('🚀 Opening share target picker...');
-        
         await liff.shareTargetPicker([
           {
             type: 'flex',
@@ -210,18 +437,16 @@
           }
         ]);
         
-        debugLog('✅ Share successful');
-        hideLoading();
-        showSuccess('✅ แชร์ Flex Message สำเร็จ!');
+        hideLoadingOverlay();
+        showSuccess('✅ แชร์สำเร็จ!', `คุณได้แชร์ Flex Message ไปเรียบร้อยแล้ว`);
+        
         setTimeout(() => {
-          debugLog('🔒 Closing window...');
           liff.closeWindow();
         }, 2000);
         
       } catch (err) {
-        debugLog('❌ Share Error', err);
+        hideLoadingOverlay();
         
-        // ตรวจสอบว่า user ยกเลิกการแชร์หรือไม่
         if (err.message && (err.message.includes('cancel') || err.message.includes('closed'))) {
           showError('ℹ️ ยกเลิกการแชร์', 'คุณได้ยกเลิกการแชร์ Flex Message');
         } else {
@@ -232,33 +457,31 @@
       }
     }
     
-    // Helper functions
     function hideLoading() {
-      document.querySelector('.loading').style.display = 'none';
+      document.getElementById('loadingText').style.display = 'none';
     }
     
     function showError(title, message) {
       hideLoading();
+      hideLoadingOverlay();
       const errorDiv = document.getElementById('error');
       errorDiv.style.display = 'block';
       errorDiv.innerHTML = `
         <div class="icon">❌</div>
-        <strong>${title}</strong><br>
-        <div style="margin-top: 10px; font-size: 14px;">${message}</div>
+        <div class="message-title">${title}</div>
+        <div class="message-text">${message}</div>
       `;
-      debugLog('🔴 Error displayed', { title, message });
     }
     
-    function showSuccess(message) {
+    function showSuccess(title, message) {
       hideLoading();
       const successDiv = document.getElementById('success');
       successDiv.style.display = 'block';
       successDiv.innerHTML = `
         <div class="icon">✅</div>
-        <strong>${message}</strong><br>
-        <div style="margin-top: 10px; font-size: 14px;">กำลังปิดหน้าต่าง...</div>
+        <div class="message-title">${title}</div>
+        <div class="message-text">${message}</div>
       `;
-      debugLog('🟢 Success displayed', { message });
     }
   </script>
 </body>
