@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Share Flex Message</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      text-align: center; 
+      padding: 40px 20px;
+      background: linear-gradient(135deg, #0066CC 0%, #004499 100%);
+      color: white;
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      max-width: 400px;
+      width: 100%;
+    }
+    .loading { 
+      font-size: 20px; 
+      font-weight: 500;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .error {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+    .success {
+      background: rgba(255,255,255,0.1);
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="loading">⏳ กำลังโหลด...</div>
+    <div id="error" class="error" style="display:none;"></div>
+    <div id="success" class="success" style="display:none;"></div>
+  </div>
+  
+  <script>
+    const LIFF_ID = '1656032875-o6mwvLAQ';
+    const BOT_ID = '@allaboutitscript';
+    
+    liff.init({ liffId: LIFF_ID })
+      .then(() => {
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get('mode');
+        const type = params.get('type');
+        const flexId = params.get('flexId');
+        const data = params.get('data');
+        const altText = params.get('altText');
+        
+        if (!liff.isInClient()) {
+          document.querySelector('.loading').textContent = '⚠️ กรุณาเปิดลิงก์ใน LINE';
+          document.getElementById('error').style.display = 'block';
+          document.getElementById('error').innerHTML = 'คุณต้องเปิดลิงก์นี้ใน LINE App เพื่อใช้ฟีเจอร์แชร์';
+          return;
+        }
+        
+        if (mode === 'share' && type === 'flex') {
+          shareFlexMessage(flexId, data, altText);
+        } else {
+          document.querySelector('.loading').textContent = '❌ ไม่พบข้อมูลสำหรับแชร์';
+        }
+      })
+      .catch(err => {
+        console.error('LIFF Init Error:', err);
+        document.querySelector('.loading').style.display = 'none';
+        document.getElementById('error').style.display = 'block';
+        document.getElementById('error').innerHTML = '<strong>เกิดข้อผิดพลาด:</strong><br>' + err.message;
+      });
+    
+    async function shareFlexMessage(flexId, flexData, altText = 'Flex Message') {
+      let displayName = 'เพื่อน';
+      try {
+        const profile = await liff.getProfile();
+        displayName = profile.displayName;
+      } catch (err) {
+        console.error('Get Profile Error:', err);
+      }
+      
+      let flexContent;
+      try {
+        if (flexData) {
+          flexContent = JSON.parse(decodeURIComponent(flexData));
+        } else {
+          // ถ้าไม่มี flexData ให้ใช้ template มาตรฐาน
+          flexContent = createDefaultFlexMessage(displayName, flexId);
+        }
+      } catch (e) {
+        console.error('Flex Data Parse Error:', e);
+        flexContent = createDefaultFlexMessage(displayName, flexId);
+      }
+      
+      if (liff.isApiAvailable('shareTargetPicker')) {
+        liff.shareTargetPicker([
+          {
+            type: 'flex',
+            altText: altText || `Flex Message แชร์โดย ${displayName}`,
+            contents: flexContent
+          }
+        ])
+        .then(() => {
+          document.querySelector('.loading').style.display = 'none';
+          document.getElementById('success').style.display = 'block';
+          document.getElementById('success').innerHTML = '✅ แชร์ Flex Message สำเร็จ!';
+          setTimeout(() => liff.closeWindow(), 2000);
+        })
+        .catch(err => {
+          console.error('Share Error:', err);
+          document.querySelector('.loading').style.display = 'none';
+          document.getElementById('error').style.display = 'block';
+          document.getElementById('error').innerHTML = '<strong>ไม่สามารถแชร์ได้:</strong><br>' + err.message;
+        });
+      } else {
+        document.querySelector('.loading').textContent = '❌ ไม่รองรับ Share Target Picker';
+      }
+    }
+    
+    function createDefaultFlexMessage(displayName, flexId) {
+      return {
+        type: 'bubble',
+        hero: {
+          type: 'image',
+          url: 'https://developers.line.biz/assets/img/og-image-line-messaging-api-7d18d5265b9a0a9596c80b767e97c0e4.png',
+          size: 'full',
+          aspectRatio: '20:13',
+          aspectMode: 'cover'
+        },
+        body: {
+          type: 'box',
+          layout: 'vertical',
+          contents: [
+            {
+              type: 'text',
+              text: '📨 Flex Message',
+              weight: 'bold',
+              size: 'xl',
+              color: '#0066CC'
+            },
+            {
+              type: 'box',
+              layout: 'baseline',
+              spacing: 'sm',
+              margin: 'md',
+              contents: [
+                {
+                  type: 'text',
+                  text: '👤 แชร์โดย:',
+                  size: 'sm',
+                  color: '#aaaaaa',
+                  flex: 0
+                },
+                {
+                  type: 'text',
+                  text: displayName,
+                  size: 'sm',
+                  color: '#666666',
+                  weight: 'bold',
+                  flex: 0,
+                  margin: 'sm'
+                }
+              ]
+            },
+            {
+              type: 'separator',
+              margin: 'md'
+            },
+            {
+              type: 'text',
+              text: 'Flex Message นี้ถูกแชร์ผ่าน LIFF Share System',
+              size: 'sm',
+              color: '#999999',
+              margin: 'md',
+              wrap: true
+            }
+          ]
+        },
+        footer: {
+          type: 'box',
+          layout: 'vertical',
+          spacing: 'sm',
+          contents: [
+            {
+              type: 'button',
+              action: {
+                type: 'uri',
+                label: '➕ เพิ่มเพื่อนบอท',
+                uri: `https://line.me/R/ti/p/${BOT_ID}`
+              },
+              style: 'primary',
+              color: '#06C755',
+              height: 'sm'
+            }
+          ]
+        }
+      };
+    }
+  </script>
+</body>
+</html>
