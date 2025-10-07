@@ -42,15 +42,6 @@
       font-size: 48px;
       margin-bottom: 10px;
     }
-    .debug {
-      background: rgba(0,0,0,0.3);
-      padding: 10px;
-      border-radius: 5px;
-      margin-top: 10px;
-      font-size: 12px;
-      text-align: left;
-      word-break: break-all;
-    }
   </style>
 </head>
 <body>
@@ -59,7 +50,6 @@
     <div class="loading">⏳ กำลังโหลด...</div>
     <div id="error" class="error" style="display:none;"></div>
     <div id="success" class="success" style="display:none;"></div>
-    <div id="debug" class="debug" style="display:none;"></div>
   </div>
   
   <script>
@@ -67,25 +57,17 @@
     
     // ⚠️ แก้ไข URL นี้เป็น Web App URL ของคุณ
     // ตัวอย่าง: https://script.google.com/macros/s/AKfycbxxx.../exec
-    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxnOgK17_ZsFmmZUJkRV8g4I8KULa9PSYkYti2qhlilWOQDByYZ0k4cNZlw-V_gGrl4Gg/exec';
+    const WEB_APP_URL = 'YOUR_WEB_APP_URL_HERE';
     
-    // Debug mode
-    const DEBUG = true;
+    // Debug mode - ปิดการแสดง log
+    const DEBUG = false;
     
     function debugLog(message, data = null) {
-      console.log(message, data);
+      // Log เฉพาะใน console (ไม่แสดงบนหน้าจอ)
       if (DEBUG) {
-        const debugDiv = document.getElementById('debug');
-        debugDiv.style.display = 'block';
-        debugDiv.innerHTML += `<div><strong>${message}</strong></div>`;
-        if (data) {
-          debugDiv.innerHTML += `<div style="color: #90EE90;">${JSON.stringify(data, null, 2)}</div>`;
-        }
-        debugDiv.innerHTML += '<hr style="border-color: rgba(255,255,255,0.2);">';
+        console.log(message, data);
       }
     }
-    
-    debugLog('🚀 Starting LIFF initialization...');
     
     liff.init({ liffId: LIFF_ID })
       .then(() => {
@@ -96,41 +78,31 @@
         const type = params.get('type');
         const flexId = params.get('flexId');
         
-        debugLog('📋 URL Parameters', { mode, type, flexId });
-        
         // ตรวจสอบว่าเปิดใน LINE หรือไม่
         if (!liff.isInClient()) {
-          debugLog('⚠️ Not in LINE client');
           showError('⚠️ กรุณาเปิดลิงก์ใน LINE', 'คุณต้องเปิดลิงก์นี้ใน LINE App เพื่อใช้ฟีเจอร์แชร์');
           return;
         }
         
-        debugLog('✅ Running in LINE client');
-        
         // ตรวจสอบ parameters
         if (!mode || !type || !flexId) {
-          debugLog('❌ Missing required parameters');
           showError('❌ ข้อมูลไม่ครบถ้วน', `ไม่พบข้อมูลที่จำเป็น<br>mode: ${mode}<br>type: ${type}<br>flexId: ${flexId}`);
           return;
         }
         
         if (mode === 'share' && type === 'flex') {
-          debugLog('🔄 Starting to load Flex data...');
           loadFlexFromServer(flexId);
         } else {
-          debugLog('❌ Invalid mode or type');
           showError('❌ ข้อมูลไม่ถูกต้อง', `mode: ${mode}, type: ${type}`);
         }
       })
       .catch(err => {
-        debugLog('❌ LIFF Init Error', err);
         showError('❌ เกิดข้อผิดพลาด', err.message);
       });
     
     // ฟังก์ชันโหลด Flex จาก Google Apps Script Web App
     async function loadFlexFromServer(flexId) {
       try {
-        debugLog('📡 Fetching data from server...', { flexId, url: WEB_APP_URL });
         
         if (WEB_APP_URL === 'YOUR_WEB_APP_URL_HERE') {
           throw new Error('❌ กรุณาตั้งค่า WEB_APP_URL ในโค้ด HTML');
