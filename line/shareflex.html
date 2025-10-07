@@ -36,17 +36,24 @@
       padding: 20px;
       border-radius: 10px;
       margin-top: 20px;
+      backdrop-filter: blur(10px);
     }
     .success {
       background: rgba(255,255,255,0.1);
       padding: 20px;
       border-radius: 10px;
       margin-top: 20px;
+      backdrop-filter: blur(10px);
+    }
+    .icon {
+      font-size: 48px;
+      margin-bottom: 10px;
     }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="icon">📨</div>
     <div class="loading">⏳ กำลังโหลด...</div>
     <div id="error" class="error" style="display:none;"></div>
     <div id="success" class="success" style="display:none;"></div>
@@ -54,6 +61,8 @@
   
   <script>
     const LIFF_ID = '1656032875-o6mwvLAQ';
+    // Google Drive Folder ID สำหรับดึงข้อมูล Flex
+    const FOLDER_ID = '1Gj_iG2lsOyrKCXcPZWTffTm7GHXhhq3G';
     
     liff.init({ liffId: LIFF_ID })
       .then(() => {
@@ -61,30 +70,61 @@
         const mode = params.get('mode');
         const type = params.get('type');
         const flexId = params.get('flexId');
-        const data = params.get('data');
         
+        // ตรวจสอบว่าเปิดใน LINE หรือไม่
         if (!liff.isInClient()) {
-          document.querySelector('.loading').textContent = '⚠️ กรุณาเปิดลิงก์ใน LINE';
-          document.getElementById('error').style.display = 'block';
-          document.getElementById('error').innerHTML = 'คุณต้องเปิดลิงก์นี้ใน LINE App เพื่อใช้ฟีเจอร์แชร์';
+          showError('⚠️ กรุณาเปิดลิงก์ใน LINE', 'คุณต้องเปิดลิงก์นี้ใน LINE App เพื่อใช้ฟีเจอร์แชร์');
           return;
         }
         
-        if (mode === 'share' && type === 'flex') {
-          shareFlexMessage(flexId, data);
+        // ตรวจสอบ parameters
+        if (mode === 'share' && type === 'flex' && flexId) {
+          // ใช้วิธีดึงข้อมูลจาก Google Drive แทน
+          loadFlexFromDrive(flexId);
         } else {
-          document.querySelector('.loading').textContent = '❌ ไม่พบข้อมูลสำหรับแชร์';
+          showError('❌ ข้อมูลไม่ครบถ้วน', 'ไม่พบข้อมูลที่จำเป็นสำหรับการแชร์');
         }
       })
       .catch(err => {
         console.error('LIFF Init Error:', err);
-        document.querySelector('.loading').style.display = 'none';
-        document.getElementById('error').style.display = 'block';
-        document.getElementById('error').innerHTML = '<strong>เกิดข้อผิดพลาด:</strong><br>' + err.message;
+        showError('❌ เกิดข้อผิดพลาด', err.message);
       });
     
-    async function shareFlexMessage(flexId, flexData) {
+    // ฟังก์ชันโหลด Flex จาก Google Drive
+    async function loadFlexFromDrive(flexId) {
+      try {
+        // สร้าง URL สำหรับดึงไฟล์จาก Google Drive
+        const driveUrl = `https://drive.google.com/uc?export=download&id=${FOLDER_ID}/flex_${flexId}.txt`;
+        
+        // ในกรณีจริง คุณควรใช้ Google Apps Script Web App เพื่อดึงข้อมูล
+        // ตัวอย่างนี้จะใช้วิธีอื่นแทน
+        
+        // วิธีที่แนะนำ: ใช้ Google Apps Script Web App
+        const scriptUrl = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL';
+        const response = await fetch(`${scriptUrl}?action=getFlexData&flexId=${flexId}`);
+        
+        if (!response.ok) {
+          throw new Error('ไม่สามารถโหลดข้อมูลได้');
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          shareFlexMessage(data.flexJson, data.altText);
+        } else {
+          throw new Error(data.error || 'ไม่พบข้อมูล Flex Message');
+        }
+        
+      } catch (error) {
+        console.error('Load Flex Error:', error);
+        showError('❌ โหลดข้อมูลล้มเหลว', 'ไม่สามารถโหลด Flex Message ได้<br>กรุณาลองใหม่อีกครั้ง');
+      }
+    }
+    
+    // ฟังก์ชันแชร์ Flex Message
+    async function shareFlexMessage(flexJson, altText = 'Flex Message') {
       let displayName = 'เพื่อน';
+      
       try {
         const profile = await liff.getProfile();
         displayName = profile.displayName;
@@ -93,11 +133,10 @@
       }
       
       let flexContent;
-      let altText = 'Flex Message';
       
       try {
-        if (flexData) {
-          const parsedData = JSON.parse(decodeURIComponent(flexData));
+        if (typeof flexJson === 'string') {
+          const parsedData = JSON.parse(flexJson);
           if (parsedData.type === 'flex') {
             flexContent = parsedData.contents;
             altText = parsedData.altText || altText;
@@ -105,17 +144,18 @@
             flexContent = parsedData;
           }
         } else {
-          throw new Error('ไม่พบข้อมูล Flex Message');
+          flexContent = flexJson;
         }
       } catch (e) {
         console.error('Flex Data Parse Error:', e);
-        document.querySelector('.loading').style.display = 'none';
-        document.getElementById('error').style.display = 'block';
-        document.getElementById('error').innerHTML = '<strong>ข้อผิดพลาด:</strong><br>ไม่สามารถประมวลผล Flex Message ได้';
+        showError('❌ ข้อผิดพลาด', 'ไม่สามารถประมวลผล Flex Message ได้');
         return;
       }
       
+      // ตรวจสอบว่ารองรับ Share Target Picker หรือไม่
       if (liff.isApiAvailable('shareTargetPicker')) {
+        document.querySelector('.loading').innerHTML = '📤 กำลังเปิดหน้าแชร์...';
+        
         liff.shareTargetPicker([
           {
             type: 'flex',
@@ -124,20 +164,52 @@
           }
         ])
         .then(() => {
-          document.querySelector('.loading').style.display = 'none';
-          document.getElementById('success').style.display = 'block';
-          document.getElementById('success').innerHTML = '✅ แชร์ Flex Message สำเร็จ!';
+          hideLoading();
+          showSuccess('✅ แชร์ Flex Message สำเร็จ!');
           setTimeout(() => liff.closeWindow(), 2000);
         })
         .catch(err => {
           console.error('Share Error:', err);
-          document.querySelector('.loading').style.display = 'none';
-          document.getElementById('error').style.display = 'block';
-          document.getElementById('error').innerHTML = '<strong>ไม่สามารถแชร์ได้:</strong><br>' + err.message;
+          
+          // ตรวจสอบว่า user ยกเลิกการแชร์หรือไม่
+          if (err.message && err.message.includes('cancel')) {
+            showError('ℹ️ ยกเลิกการแชร์', 'คุณได้ยกเลิกการแชร์ Flex Message');
+          } else {
+            showError('❌ ไม่สามารถแชร์ได้', err.message || 'เกิดข้อผิดพลาดในการแชร์');
+          }
+          
+          setTimeout(() => liff.closeWindow(), 3000);
         });
       } else {
-        document.querySelector('.loading').textContent = '❌ ไม่รองรับ Share Target Picker';
+        showError('❌ ไม่รองรับฟีเจอร์นี้', 'เวอร์ชันของ LINE ไม่รองรับการแชร์<br>กรุณาอัพเดท LINE App');
       }
+    }
+    
+    // Helper functions
+    function hideLoading() {
+      document.querySelector('.loading').style.display = 'none';
+    }
+    
+    function showError(title, message) {
+      hideLoading();
+      const errorDiv = document.getElementById('error');
+      errorDiv.style.display = 'block';
+      errorDiv.innerHTML = `
+        <div class="icon">❌</div>
+        <strong>${title}</strong><br>
+        <div style="margin-top: 10px; font-size: 14px;">${message}</div>
+      `;
+    }
+    
+    function showSuccess(message) {
+      hideLoading();
+      const successDiv = document.getElementById('success');
+      successDiv.style.display = 'block';
+      successDiv.innerHTML = `
+        <div class="icon">✅</div>
+        <strong>${message}</strong><br>
+        <div style="margin-top: 10px; font-size: 14px;">กำลังปิดหน้าต่าง...</div>
+      `;
     }
   </script>
 </body>
