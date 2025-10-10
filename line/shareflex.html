@@ -303,6 +303,13 @@
       if (DEBUG) console.log(message, data);
     }
 
+    // ตรวจสอบว่าอยู่บน PC หรือไม่
+    function isPC() {
+      const userAgent = navigator.userAgent.toLowerCase();
+      const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      return !isMobile;
+    }
+
     // แสดง Loading Overlay
     function showLoadingOverlay(text = 'กำลังประมวลผล', subtext = 'กรุณารอสักครู่...') {
       const overlay = document.getElementById('loadingOverlay');
@@ -340,6 +347,12 @@
       .then(async () => {
         debugLog('✅ LIFF initialized successfully');
         
+        // ตรวจสอบว่าอยู่บน PC หรือไม่
+        if (isPC()) {
+          window.location.href = 'https://developers.line.biz/';
+          return;
+        }
+        
         // อัพเดทชื่อผู้ใช้
         await updateUserName();
         
@@ -365,6 +378,11 @@
         }
       })
       .catch(err => {
+        // ตรวจสอบว่าอยู่บน PC หรือไม่ (ในกรณีที่ LIFF init ล้มเหลว)
+        if (isPC()) {
+          window.location.href = 'https://developers.line.biz/';
+          return;
+        }
         showError('❌ เกิดข้อผิดพลาด', err.message);
       });
     
