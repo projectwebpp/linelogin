@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,viewport-fit=cover">
-  <title>My LIFF App - Share Target Picker</title>
+  <title>LIFF Auto Share</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -52,92 +52,69 @@
 
     .content {
       padding: 20px;
+      text-align: center;
     }
 
-    .preview {
-      background: #f8f9fa;
-      border-radius: 12px;
-      padding: 15px;
-      margin-bottom: 20px;
-      border: 1px solid #e9ecef;
-    }
-
-    .preview h3 {
-      margin-bottom: 10px;
-      color: #333;
-      font-size: 16px;
-    }
-
-    .preview-box {
-      background: white;
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-
-    .preview-title {
-      font-weight: bold;
-      margin-bottom: 5px;
-      color: #333;
-    }
-
-    .preview-details {
+    .loader {
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      margin: 10px 0;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 0;
     }
 
-    .preview-row {
-      display: flex;
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid #f3f3f3;
+      border-top: 5px solid #00b900;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
     }
 
-    .preview-label {
-      flex: 1;
-      color: #888;
-      font-size: 14px;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
-    .preview-value {
-      flex: 4;
-      color: #555;
-      font-size: 14px;
-    }
-
-    .preview-image {
+    .status {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f0f8ff;
+      border-radius: 10px;
       text-align: center;
-      margin: 15px 0;
     }
 
-    .preview-image img {
-      max-width: 100%;
-      border-radius: 5px;
+    .status.success {
+      background: #e8f5e9;
+      color: #2e7d32;
     }
 
-    .preview-note {
-      font-size: 12px;
-      color: #888;
-      margin-top: 10px;
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
     }
 
-    .button-group {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
+    .footer {
+      color: white;
+      text-align: center;
+      font-size: 14px;
+      opacity: 0.8;
     }
 
     .btn {
-      flex: 1;
-      padding: 12px;
+      padding: 12px 24px;
       border: none;
       border-radius: 10px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
-      display: flex;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
+      margin-top: 15px;
     }
 
     .btn-primary {
@@ -159,65 +136,7 @@
       background: #e9ecef;
     }
 
-    .btn-logout {
-      background: #ff4444;
-      color: white;
-    }
-
-    .btn-logout:hover {
-      background: #cc0000;
-    }
-
-    .status {
-      margin-top: 15px;
-      padding: 15px;
-      background: #f0f8ff;
-      border-radius: 10px;
-      text-align: center;
-      display: none;
-    }
-
-    .status.show {
-      display: block;
-      animation: fadeIn 0.5s;
-    }
-
-    .status.success {
-      background: #e8f5e9;
-      color: #2e7d32;
-    }
-
-    .status.error {
-      background: #ffebee;
-      color: #c62828;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    .footer {
-      color: white;
-      text-align: center;
-      font-size: 14px;
-      opacity: 0.8;
-    }
-
-    .user-info {
-      background: rgba(255, 255, 255, 0.2);
-      padding: 10px 15px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      color: white;
-      text-align: center;
-    }
-
     @media (max-width: 480px) {
-      .button-group {
-        flex-direction: column;
-      }
-      
       body {
         padding: 10px;
       }
@@ -225,79 +144,49 @@
   </style>
 </head>
 <body>
-  <div class="user-info" id="userInfo">
-    <i class="fas fa-user"></i> <span id="userStatus">กำลังโหลด...</span>
-  </div>
-  
   <div class="container">
     <div class="header">
-      <h1>LIFF Share Target Picker</h1>
-      <p>แชร์ข้อความผ่าน LIFF App</p>
+      <h1>LIFF Auto Share</h1>
+      <p>กำลังแชร์ข้อความอัตโนมัติ...</p>
     </div>
     
     <div class="content">
-      <div class="preview">
-        <h3>ตัวอย่างข้อความที่จะแชร์</h3>
-        <div class="preview-box">
-          <div class="preview-title">BROWN'S ADVENTURE</div>
-          <div class="preview-details">
-            <div class="preview-row">
-              <div class="preview-label">Date</div>
-              <div class="preview-value">Monday 25, 9:00PM</div>
-            </div>
-            <div class="preview-row">
-              <div class="preview-label">Place</div>
-              <div class="preview-value">LINE Thailand</div>
-            </div>
-          </div>
-          <div class="preview-image">
-            <img src="https://scdn.line-apps.com/n/channel_devcenter/img/fx/linecorp_code_withborder.png" alt="LINE Code">
-          </div>
-          <div class="preview-note">You can enter the theater by using this code instead of a ticket</div>
-        </div>
+      <div class="loader">
+        <div class="spinner"></div>
+        <p id="status">กำลังเตรียมแชร์ข้อความ...</p>
       </div>
       
-      <div class="button-group">
+      <div id="manualShare" style="display: none;">
+        <p>การแชร์อัตโนมัติล้มเหลว</p>
         <button class="btn btn-primary" id="btnShare">
-          <i class="fas fa-share-alt"></i> Share Target Picker
+          <i class="fas fa-share-alt"></i> แชร์ด้วยตนเอง
         </button>
-        <button class="btn btn-secondary" id="btnLogin" style="display: none;">
-          <i class="fas fa-sign-in-alt"></i> Log In
-        </button>
-      </div>
-      
-      <button class="btn btn-logout" id="btnLogOut" style="display: none;">
-        <i class="fas fa-sign-out-alt"></i> Log Out
-      </button>
-      
-      <div class="status" id="status">
-        กำลังแชร์ข้อความ...
       </div>
     </div>
   </div>
   
   <div class="footer">
-    <p>LIFF App - Share Target Picker Demo</p>
+    <p>LIFF App - Auto Share Demo</p>
   </div>
 
   <script src="https://static.line-scdn.net/liff/edge/versions/2.21.4/sdk.js"></script>
   <script>
     const statusEl = document.getElementById('status');
-    const userStatusEl = document.getElementById('userStatus');
-    const userInfoEl = document.getElementById('userInfo');
+    const manualShareEl = document.getElementById('manualShare');
+    const btnShareEl = document.getElementById('btnShare');
     
-    function showStatus(message, isSuccess = true) {
+    // ฟังก์ชันแสดงสถานะ
+    function updateStatus(message, isError = false) {
       statusEl.textContent = message;
-      statusEl.className = 'status show ' + (isSuccess ? 'success' : 'error');
-      
-      setTimeout(() => {
-        statusEl.classList.remove('show');
-      }, 3000);
+      if (isError) {
+        statusEl.style.color = '#c62828';
+      }
     }
     
+    // ฟังก์ชันแชร์ข้อความ
     async function sendShare() {
       try {
-        showStatus('กำลังแชร์ข้อความ...', true);
+        updateStatus('กำลังเปิดหน้าต่างแชร์...');
         
         const result = await liff.shareTargetPicker([
           {
@@ -401,62 +290,58 @@
         ]);
         
         if (result) {
-          showStatus(`[${result.status}] ข้อความถูกส่งเรียบร้อยแล้ว!`, true);
+          updateStatus(`✅ แชร์สำเร็จ! (สถานะ: ${result.status})`);
+          
+          // ปิดหน้าต่างหลังจากแชร์สำเร็จ (ถ้าเปิดในแอป LINE)
+          if (liff.isInClient()) {
+            setTimeout(() => {
+              liff.closeWindow();
+            }, 2000);
+          }
         } else {
-          const [majorVer, minorVer, patchVer] = (liff.getLineVersion() || "").split('.');
-
-          if (minorVer === undefined) {
-            showStatus('การแชร์ถูกยกเลิกในเบราว์เซอร์ภายนอก', false);
-            return;
-          }
-
-          if (parseInt(majorVer) >= 10 && parseInt(minorVer) >= 10 && parseInt(patchVer) > 0) {
-            showStatus('การแชร์ถูกยกเลิกในแอป LINE', false);
-          }
+          updateStatus('❌ การแชร์ถูกยกเลิก', true);
+          manualShareEl.style.display = 'block';
         }
       } catch (error) {
         console.error(error);
-        showStatus('เกิดข้อผิดพลาดในการแชร์: ' + error.message, false);
+        updateStatus('❌ เกิดข้อผิดพลาด: ' + error.message, true);
+        manualShareEl.style.display = 'block';
       }
     }
     
-    function logOut() {
-      liff.logout();
-      window.location.reload();
-    }
-    
+    // ฟังก์ชันหลัก
     async function main() {
       try {
-        // ใช้ LIFF ID ที่คุณให้มา
+        updateStatus('กำลังเริ่มต้น LIFF...');
+        
+        // ใช้ LIFF ID ของคุณ
         await liff.init({ liffId: "1655989732-k8bpz5NA" });
         
         if (liff.isLoggedIn()) {
-          document.getElementById("btnShare").style.display = "flex";
-          userStatusEl.textContent = "คุณได้ล็อกอินแล้ว";
+          updateStatus('ล็อกอินสำเร็จ กำลังแชร์...');
           
-          if (!liff.isInClient()) {
-            document.getElementById("btnLogOut").style.display = "flex";
-          } else {
-            userStatusEl.textContent = "คุณกำลังใช้แอป LINE";
-          }
+          // รอสักครู่เพื่อให้ผู้ใช้เห็นสถานะก่อนแชร์
+          setTimeout(() => {
+            sendShare();
+          }, 1000);
         } else {
-          document.getElementById("btnLogin").style.display = "flex";
-          userStatusEl.textContent = "กรุณาล็อกอินเพื่อใช้งาน";
+          updateStatus('กำลังล็อกอิน...');
+          
+          // ล็อกอินอัตโนมัติ
+          liff.login();
         }
       } catch (error) {
         console.error("LIFF Initialization failed", error);
-        userStatusEl.textContent = "เกิดข้อผิดพลาดในการโหลด LIFF";
-        userInfoEl.style.background = "rgba(255, 0, 0, 0.2)";
+        updateStatus('❌ เกิดข้อผิดพลาดในการโหลด LIFF: ' + error.message, true);
+        manualShareEl.style.display = 'block';
       }
     }
     
-    // กำหนด event listeners
-    document.getElementById("btnShare").addEventListener("click", sendShare);
-    document.getElementById("btnLogin").addEventListener("click", () => liff.login());
-    document.getElementById("btnLogOut").addEventListener("click", logOut);
+    // กำหนด event listener สำหรับปุ่มแชร์ด้วยตนเอง
+    btnShareEl.addEventListener("click", sendShare);
     
-    // เริ่มต้นแอปพลิเคชัน
-    main();
+    // เริ่มต้นแอปพลิเคชันเมื่อโหลดหน้าเว็บเสร็จ
+    window.addEventListener('load', main);
   </script>
 </body>
 </html>
