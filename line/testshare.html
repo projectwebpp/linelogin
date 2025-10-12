@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,viewport-fit=cover">
-  <title>LIFF Auto Share</title>
+  <title>แอปแชร์ข้อความอัตโนมัติ</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    /* รีเซ็ตค่าเริ่มต้นของเบราว์เซอร์ */
     * {
       margin: 0;
       padding: 0;
@@ -13,6 +14,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
 
+    /* ตั้งค่าพื้นหลังและจัดวางหน้าเว็บ */
     body {
       background: linear-gradient(135deg, #00b900 0%, #00c300 100%);
       min-height: 100vh;
@@ -23,6 +25,7 @@
       padding: 20px;
     }
 
+    /* กล่องเนื้อหาหลัก */
     .container {
       width: 100%;
       max-width: 500px;
@@ -33,6 +36,7 @@
       margin-bottom: 20px;
     }
 
+    /* ส่วนหัวของแอป */
     .header {
       background: #00b900;
       color: white;
@@ -50,11 +54,13 @@
       font-size: 14px;
     }
 
+    /* ส่วนเนื้อหา */
     .content {
       padding: 20px;
       text-align: center;
     }
 
+    /* ตัวโหลด */
     .loader {
       display: flex;
       flex-direction: column;
@@ -63,6 +69,7 @@
       padding: 30px 0;
     }
 
+    /* วงกลมหมุนแสดงการโหลด */
     .spinner {
       width: 50px;
       height: 50px;
@@ -73,11 +80,13 @@
       margin-bottom: 20px;
     }
 
+    /* อนิเมชันการหมุน */
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
 
+    /* แสดงสถานะ */
     .status {
       margin-top: 15px;
       padding: 15px;
@@ -86,16 +95,19 @@
       text-align: center;
     }
 
+    /* สถานะสำเร็จ */
     .status.success {
       background: #e8f5e9;
       color: #2e7d32;
     }
 
+    /* สถานะผิดพลาด */
     .status.error {
       background: #ffebee;
       color: #c62828;
     }
 
+    /* ส่วนท้ายเว็บ */
     .footer {
       color: white;
       text-align: center;
@@ -103,6 +115,7 @@
       opacity: 0.8;
     }
 
+    /* ปุ่ม */
     .btn {
       padding: 12px 24px;
       border: none;
@@ -117,6 +130,7 @@
       margin-top: 15px;
     }
 
+    /* ปุ่มหลัก */
     .btn-primary {
       background: #00b900;
       color: white;
@@ -126,6 +140,7 @@
       background: #009900;
     }
 
+    /* ปุ่มรอง */
     .btn-secondary {
       background: #f8f9fa;
       color: #333;
@@ -136,6 +151,7 @@
       background: #e9ecef;
     }
 
+    /* สำหรับหน้าจอเล็ก */
     @media (max-width: 480px) {
       body {
         padding: 10px;
@@ -144,18 +160,21 @@
   </style>
 </head>
 <body>
+  <!-- กล่องเนื้อหาหลัก -->
   <div class="container">
     <div class="header">
-      <h1>LIFF Auto Share</h1>
+      <h1>แอปแชร์ข้อความอัตโนมัติ</h1>
       <p>กำลังแชร์ข้อความอัตโนมัติ...</p>
     </div>
     
     <div class="content">
+      <!-- ส่วนแสดงการโหลด -->
       <div class="loader">
         <div class="spinner"></div>
         <p id="status">กำลังเตรียมแชร์ข้อความ...</p>
       </div>
       
+      <!-- ส่วนสำรองหากการแชร์อัตโนมัติล้มเหลว -->
       <div id="manualShare" style="display: none;">
         <p>การแชร์อัตโนมัติล้มเหลว</p>
         <button class="btn btn-primary" id="btnShare">
@@ -165,196 +184,195 @@
     </div>
   </div>
   
+  <!-- ส่วนท้ายเว็บ -->
   <div class="footer">
-    <p>LIFF App - Auto Share Demo</p>
+    <p>แอป LIFF - แชร์ข้อความอัตโนมัติ</p>
   </div>
 
+  <!-- ไลบรารี LIFF จาก LINE -->
   <script src="https://static.line-scdn.net/liff/edge/versions/2.21.4/sdk.js"></script>
+  
   <script>
+    // เก็บองค์ประกอบ HTML ที่เราจะใช้
     const statusEl = document.getElementById('status');
     const manualShareEl = document.getElementById('manualShare');
     const btnShareEl = document.getElementById('btnShare');
     
-    // ฟังก์ชันแสดงสถานะ
+    // ฟังก์ชันสำหรับอัพเดทสถานะ
     function updateStatus(message, isError = false) {
       statusEl.textContent = message;
       if (isError) {
         statusEl.style.color = '#c62828';
+      } else {
+        statusEl.style.color = '#333';
       }
     }
+    
+    // ข้อมูลข้อความที่จะแชร์ (Flex Message)
+    const flexMessage = {
+      "type": "flex",
+      "altText": "แนะนำร้าน Brown Cafe",
+      "contents": {
+        "type": "bubble",
+        "hero": {
+          "type": "image",
+          "url": "https://developers-resource.landpress.line.me/fx/img/01_1_cafe.png",
+          "size": "full",
+          "aspectRatio": "20:13",
+          "aspectMode": "cover",
+          "action": {
+            "type": "uri",
+            "uri": "https://line.me/"
+          }
+        },
+        "body": {
+          "type": "box",
+          "layout": "vertical",
+          "contents": [
+            {
+              "type": "text",
+              "text": "Brown Cafe",
+              "weight": "bold",
+              "size": "xl"
+            },
+            {
+              "type": "box",
+              "layout": "baseline",
+              "margin": "md",
+              "contents": [
+                {
+                  "type": "icon",
+                  "size": "sm",
+                  "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png"
+                },
+                {
+                  "type": "icon",
+                  "size": "sm",
+                  "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png"
+                },
+                {
+                  "type": "icon",
+                  "size": "sm",
+                  "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png"
+                },
+                {
+                  "type": "icon",
+                  "size": "sm",
+                  "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png"
+                },
+                {
+                  "type": "icon",
+                  "size": "sm",
+                  "url": "https://developers-resource.landpress.line.me/fx/img/review_gray_star_28.png"
+                },
+                {
+                  "type": "text",
+                  "text": "4.0",
+                  "size": "sm",
+                  "color": "#999999",
+                  "margin": "md",
+                  "flex": 0
+                }
+              ]
+            },
+            {
+              "type": "box",
+              "layout": "vertical",
+              "margin": "lg",
+              "spacing": "sm",
+              "contents": [
+                {
+                  "type": "box",
+                  "layout": "baseline",
+                  "spacing": "sm",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "สถานที่",
+                      "color": "#aaaaaa",
+                      "size": "sm",
+                      "flex": 1
+                    },
+                    {
+                      "type": "text",
+                      "text": "Flex Tower, 7-7-4 Midori-ku, Tokyo",
+                      "wrap": true,
+                      "color": "#666666",
+                      "size": "sm",
+                      "flex": 5
+                    }
+                  ]
+                },
+                {
+                  "type": "box",
+                  "layout": "baseline",
+                  "spacing": "sm",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "เวลา",
+                      "color": "#aaaaaa",
+                      "size": "sm",
+                      "flex": 1
+                    },
+                    {
+                      "type": "text",
+                      "text": "10:00 - 23:00",
+                      "wrap": true,
+                      "color": "#666666",
+                      "size": "sm",
+                      "flex": 5
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "footer": {
+          "type": "box",
+          "layout": "vertical",
+          "spacing": "sm",
+          "contents": [
+            {
+              "type": "button",
+              "style": "link",
+              "height": "sm",
+              "action": {
+                "type": "uri",
+                "label": "โทร",
+                "uri": "https://line.me/"
+              }
+            },
+            {
+              "type": "button",
+              "style": "primary",
+              "height": "sm",
+              "action": {
+                "type": "uri",
+                "label": "แชร์ต่อ",
+                "uri": "https://liff.line.me/1655989732-k8bpz5NA"
+              }
+            }
+          ],
+          "flex": 0
+        }
+      }
+    };
     
     // ฟังก์ชันแชร์ข้อความ
     async function sendShare() {
       try {
         updateStatus('กำลังเปิดหน้าต่างแชร์...');
         
-        const result = await liff.shareTargetPicker([
-          {
-            "type": "flex",
-            "altText": "Flex Message",
-            "contents":
-              //Start
-  {
-  "type": "bubble",
-  "hero": {
-    "type": "image",
-    "url": "https://developers-resource.landpress.line.me/fx/img/01_1_cafe.png",
-    "size": "full",
-    "aspectRatio": "20:13",
-    "aspectMode": "cover",
-    "action": {
-      "type": "uri",
-      "uri": "https://line.me/"
-    }
-  },
-  "body": {
-    "type": "box",
-    "layout": "vertical",
-    "contents": [
-      {
-        "type": "text",
-        "text": "Brown Cafe",
-        "weight": "bold",
-        "size": "xl"
-      },
-      {
-        "type": "box",
-        "layout": "baseline",
-        "margin": "md",
-        "contents": [
-          {
-            "type": "icon",
-            "size": "sm",
-            "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png"
-          },
-          {
-            "type": "icon",
-            "size": "sm",
-            "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png"
-          },
-          {
-            "type": "icon",
-            "size": "sm",
-            "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png"
-          },
-          {
-            "type": "icon",
-            "size": "sm",
-            "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png"
-          },
-          {
-            "type": "icon",
-            "size": "sm",
-            "url": "https://developers-resource.landpress.line.me/fx/img/review_gray_star_28.png"
-          },
-          {
-            "type": "text",
-            "text": "4.0",
-            "size": "sm",
-            "color": "#999999",
-            "margin": "md",
-            "flex": 0
-          }
-        ]
-      },
-      {
-        "type": "box",
-        "layout": "vertical",
-        "margin": "lg",
-        "spacing": "sm",
-        "contents": [
-          {
-            "type": "box",
-            "layout": "baseline",
-            "spacing": "sm",
-            "contents": [
-              {
-                "type": "text",
-                "text": "Place",
-                "color": "#aaaaaa",
-                "size": "sm",
-                "flex": 1
-              },
-              {
-                "type": "text",
-                "text": "Flex Tower, 7-7-4 Midori-ku, Tokyo",
-                "wrap": true,
-                "color": "#666666",
-                "size": "sm",
-                "flex": 5
-              }
-            ]
-          },
-          {
-            "type": "box",
-            "layout": "baseline",
-            "spacing": "sm",
-            "contents": [
-              {
-                "type": "text",
-                "text": "Time",
-                "color": "#aaaaaa",
-                "size": "sm",
-                "flex": 1
-              },
-              {
-                "type": "text",
-                "text": "10:00 - 23:00",
-                "wrap": true,
-                "color": "#666666",
-                "size": "sm",
-                "flex": 5
-              }
-            ]
-          }
-        ]
-      }
-    ]
-  },
-  "footer": {
-    "type": "box",
-    "layout": "vertical",
-    "spacing": "sm",
-    "contents": [
-      {
-        "type": "button",
-        "style": "link",
-        "height": "sm",
-        "action": {
-          "type": "uri",
-          "label": "CALL",
-          "uri": "https://line.me/"
-        }
-      },
-      {
-        "type": "button",
-        "style": "primary",
-        "height": "sm",
-        "action": {
-          "type": "uri",
-          "label": "แชร์ต่อ",
-          "uri": "https://liff.line.me/1655989732-k8bpz5NA"
-        }
-      },
-      {
-        "type": "box",
-        "layout": "vertical",
-        "contents": [],
-        "margin": "sm"
-      }
-    ],
-    "flex": 0
-  }
-}
-
-            //END
-          }
-        ]);
+        // เรียกใช้ฟังก์ชันแชร์ของ LIFF
+        const result = await liff.shareTargetPicker([flexMessage]);
         
+        // ตรวจสอบผลลัพธ์
         if (result) {
           updateStatus(`✅ แชร์สำเร็จ! (สถานะ: ${result.status})`);
           
-          // ปิดหน้าต่างหลังจากแชร์สำเร็จ (ถ้าเปิดในแอป LINE)
+          // ถ้าเปิดในแอป LINE ให้ปิดหน้าต่างหลังจากแชร์สำเร็จ
           if (liff.isInClient()) {
             setTimeout(() => {
               liff.closeWindow();
@@ -374,11 +392,12 @@
     // ฟังก์ชันหลัก
     async function main() {
       try {
-        updateStatus('กำลังเริ่มต้น LIFF...');
+        updateStatus('กำลังเริ่มต้นระบบ...');
         
-        // ใช้ LIFF ID ของคุณ
+        // เริ่มต้น LIFF ด้วย ID ของคุณ
         await liff.init({ liffId: "1655989732-k8bpz5NA" });
         
+        // ตรวจสอบว่าผู้ใช้ล็อกอินแล้วหรือยัง
         if (liff.isLoggedIn()) {
           updateStatus('ล็อกอินสำเร็จ กำลังแชร์...');
           
@@ -389,17 +408,17 @@
         } else {
           updateStatus('กำลังล็อกอิน...');
           
-          // ล็อกอินอัตโนมัติ
+          // ถ้ายังไม่ได้ล็อกอิน ให้ล็อกอินอัตโนมัติ
           liff.login();
         }
       } catch (error) {
-        console.error("LIFF Initialization failed", error);
-        updateStatus('❌ เกิดข้อผิดพลาดในการโหลด LIFF: ' + error.message, true);
+        console.error("การเริ่มต้น LIFF ล้มเหลว", error);
+        updateStatus('❌ เกิดข้อผิดพลาดในการโหลด: ' + error.message, true);
         manualShareEl.style.display = 'block';
       }
     }
     
-    // กำหนด event listener สำหรับปุ่มแชร์ด้วยตนเอง
+    // ตั้งค่าปุ่มแชร์ด้วยตนเอง
     btnShareEl.addEventListener("click", sendShare);
     
     // เริ่มต้นแอปพลิเคชันเมื่อโหลดหน้าเว็บเสร็จ
