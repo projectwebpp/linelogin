@@ -254,7 +254,7 @@
     <p>LIFF App - Share Target Picker Demo</p>
   </div>
 
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script src="https://static.line-scdn.net/liff/edge/versions/2.21.4/sdk.js"></script>
   <script>
     const statusEl = document.getElementById('status');
     const userStatusEl = document.getElementById('userStatus');
