@@ -402,7 +402,7 @@
     async function main() {
       try {
         // เปลี่ยน YOUR-LIFF-ID เป็น LIFF ID จริงของคุณ
-        await liff.init({ liffId: "YOUR-LIFF-ID" });
+        await liff.init({ liffId: "1655989732-k8bpz5NA" });
         
         if (liff.isLoggedIn()) {
           document.getElementById("btnShare").style.display = "flex";
