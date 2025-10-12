@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,viewport-fit=cover">
+  <title>My LIFF App - Share Target Picker</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #00b900 0%, #00c300 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .header {
+      background: #00b900;
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 5px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+
+    .content {
+      padding: 20px;
+    }
+
+    .preview {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 15px;
+      margin-bottom: 20px;
+      border: 1px solid #e9ecef;
+    }
+
+    .preview h3 {
+      margin-bottom: 10px;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .preview-box {
+      background: white;
+      border-radius: 8px;
+      padding: 15px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .preview-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .preview-details {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      margin: 10px 0;
+    }
+
+    .preview-row {
+      display: flex;
+    }
+
+    .preview-label {
+      flex: 1;
+      color: #888;
+      font-size: 14px;
+    }
+
+    .preview-value {
+      flex: 4;
+      color: #555;
+      font-size: 14px;
+    }
+
+    .preview-image {
+      text-align: center;
+      margin: 15px 0;
+    }
+
+    .preview-image img {
+      max-width: 100%;
+      border-radius: 5px;
+    }
+
+    .preview-note {
+      font-size: 12px;
+      color: #888;
+      margin-top: 10px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      background: #00b900;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #009900;
+    }
+
+    .btn-secondary {
+      background: #f8f9fa;
+      color: #333;
+      border: 1px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+      background: #e9ecef;
+    }
+
+    .btn-logout {
+      background: #ff4444;
+      color: white;
+    }
+
+    .btn-logout:hover {
+      background: #cc0000;
+    }
+
+    .status {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f0f8ff;
+      border-radius: 10px;
+      text-align: center;
+      display: none;
+    }
+
+    .status.show {
+      display: block;
+      animation: fadeIn 0.5s;
+    }
+
+    .status.success {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .status.error {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .footer {
+      color: white;
+      text-align: center;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    .user-info {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 10px 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      color: white;
+      text-align: center;
+    }
+
+    @media (max-width: 480px) {
+      .button-group {
+        flex-direction: column;
+      }
+      
+      body {
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="user-info" id="userInfo">
+    <i class="fas fa-user"></i> <span id="userStatus">กำลังโหลด...</span>
+  </div>
+  
+  
+      
+      <div class="button-group">
+        <button class="btn btn-primary" id="btnShare">
+          <i class="fas fa-share-alt"></i> Share Target Picker
+        </button>
+        <button class="btn btn-secondary" id="btnLogin" style="display: none;">
+          <i class="fas fa-sign-in-alt"></i> Log In
+        </button>
+      </div>
+      
+      <button class="btn btn-logout" id="btnLogOut" style="display: none;">
+        <i class="fas fa-sign-out-alt"></i> Log Out
+      </button>
+      
+      <div class="status" id="status">
+        กำลังแชร์ข้อความ...
+      </div>
+    </div>
+  </div>
+  
+  <div class="footer">
+    <p>LIFF App - Share Target Picker Demo</p>
+  </div>
+
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <script>
+    const statusEl = document.getElementById('status');
+    const userStatusEl = document.getElementById('userStatus');
+    const userInfoEl = document.getElementById('userInfo');
+    
+    function showStatus(message, isSuccess = true) {
+      statusEl.textContent = message;
+      statusEl.className = 'status show ' + (isSuccess ? 'success' : 'error');
+      
+      setTimeout(() => {
+        statusEl.classList.remove('show');
+      }, 3000);
+    }
+    
+    async function sendShare() {
+      try {
+        showStatus('กำลังแชร์ข้อความ...', true);
+        
+        const result = await liff.shareTargetPicker([
+          {
+            "type": "flex",
+            "altText": "Flex Message",
+            "contents": {
+              "type": "bubble",
+              "body": {
+                "type": "box",
+                "layout": "vertical",
+                "spacing": "md",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "BROWN'S ADVENTURE",
+                    "size": "xl",
+                    "gravity": "center",
+                    "weight": "bold",
+                    "wrap": true
+                  },
+                  {
+                    "type": "box",
+                    "layout": "vertical",
+                    "spacing": "sm",
+                    "margin": "lg",
+                    "contents": [
+                      {
+                        "type": "box",
+                        "layout": "baseline",
+                        "spacing": "sm",
+                        "contents": [
+                          {
+                            "type": "text",
+                            "text": "Date",
+                            "flex": 1,
+                            "size": "sm",
+                            "color": "#AAAAAA"
+                          },
+                          {
+                            "type": "text",
+                            "text": "Monday 25, 9:00PM",
+                            "flex": 4,
+                            "size": "sm",
+                            "color": "#666666",
+                            "wrap": true
+                          }
+                        ]
+                      },
+                      {
+                        "type": "box",
+                        "layout": "baseline",
+                        "spacing": "sm",
+                        "contents": [
+                          {
+                            "type": "text",
+                            "text": "Place",
+                            "flex": 1,
+                            "size": "sm",
+                            "color": "#AAAAAA"
+                          },
+                          {
+                            "type": "text",
+                            "text": "LINE Thailand",
+                            "flex": 4,
+                            "size": "sm",
+                            "color": "#666666",
+                            "wrap": true
+                          }
+                        ]
+                      },
+                      {
+                        "type": "box",
+                        "layout": "vertical",
+                        "margin": "xxl",
+                        "contents": [
+                          {
+                            "type": "spacer"
+                          },
+                          {
+                            "type": "image",
+                            "url": "https://scdn.line-apps.com/n/channel_devcenter/img/fx/linecorp_code_withborder.png",
+                            "size": "xl",
+                            "aspectMode": "cover"
+                          },
+                          {
+                            "type": "text",
+                            "text": "You can enter the theater by using this code instead of a ticket",
+                            "margin": "xxl",
+                            "size": "xs",
+                            "color": "#AAAAAA",
+                            "wrap": true
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        ]);
+        
+        if (result) {
+          showStatus(`[${result.status}] ข้อความถูกส่งเรียบร้อยแล้ว!`, true);
+        } else {
+          const [majorVer, minorVer, patchVer] = (liff.getLineVersion() || "").split('.');
+
+          if (minorVer === undefined) {
+            showStatus('การแชร์ถูกยกเลิกในเบราว์เซอร์ภายนอก', false);
+            return;
+          }
+
+          if (parseInt(majorVer) >= 10 && parseInt(minorVer) >= 10 && parseInt(patchVer) > 0) {
+            showStatus('การแชร์ถูกยกเลิกในแอป LINE', false);
+          }
+        }
+      } catch (error) {
+        console.error(error);
+        showStatus('เกิดข้อผิดพลาดในการแชร์: ' + error.message, false);
+      }
+    }
+    
+    function logOut() {
+      liff.logout();
+      window.location.reload();
+    }
+    
+    async function main() {
+      try {
+        // เปลี่ยน YOUR-LIFF-ID เป็น LIFF ID จริงของคุณ
+        await liff.init({ liffId: "YOUR-LIFF-ID" });
+        
+        if (liff.isLoggedIn()) {
+          document.getElementById("btnShare").style.display = "flex";
+          userStatusEl.textContent = "คุณได้ล็อกอินแล้ว";
+          
+          if (!liff.isInClient()) {
+            document.getElementById("btnLogOut").style.display = "flex";
+          } else {
+            userStatusEl.textContent = "คุณกำลังใช้แอป LINE";
+          }
+        } else {
+          document.getElementById("btnLogin").style.display = "flex";
+          userStatusEl.textContent = "กรุณาล็อกอินเพื่อใช้งาน";
+        }
+      } catch (error) {
+        console.error("LIFF Initialization failed", error);
+        userStatusEl.textContent = "เกิดข้อผิดพลาดในการโหลด LIFF";
+        userInfoEl.style.background = "rgba(255, 0, 0, 0.2)";
+      }
+    }
+    
+    // กำหนด event listeners
+    document.getElementById("btnShare").addEventListener("click", sendShare);
+    document.getElementById("btnLogin").addEventListener("click", () => liff.login());
+    document.getElementById("btnLogOut").addEventListener("click", logOut);
+    
+    // เริ่มต้นแอปพลิเคชัน
+    main();
+  </script>
+</body>
+</html>
