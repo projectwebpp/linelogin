@@ -229,7 +229,33 @@
     <i class="fas fa-user"></i> <span id="userStatus">กำลังโหลด...</span>
   </div>
   
-  
+  <div class="container">
+    <div class="header">
+      <h1>LIFF Share Target Picker</h1>
+      <p>แชร์ข้อความผ่าน LIFF App</p>
+    </div>
+    
+    <div class="content">
+      <div class="preview">
+        <h3>ตัวอย่างข้อความที่จะแชร์</h3>
+        <div class="preview-box">
+          <div class="preview-title">BROWN'S ADVENTURE</div>
+          <div class="preview-details">
+            <div class="preview-row">
+              <div class="preview-label">Date</div>
+              <div class="preview-value">Monday 25, 9:00PM</div>
+            </div>
+            <div class="preview-row">
+              <div class="preview-label">Place</div>
+              <div class="preview-value">LINE Thailand</div>
+            </div>
+          </div>
+          <div class="preview-image">
+            <img src="https://scdn.line-apps.com/n/channel_devcenter/img/fx/linecorp_code_withborder.png" alt="LINE Code">
+          </div>
+          <div class="preview-note">You can enter the theater by using this code instead of a ticket</div>
+        </div>
+      </div>
       
       <div class="button-group">
         <button class="btn btn-primary" id="btnShare">
@@ -401,7 +427,7 @@
     
     async function main() {
       try {
-        // เปลี่ยน YOUR-LIFF-ID เป็น LIFF ID จริงของคุณ
+        // ใช้ LIFF ID ที่คุณให้มา
         await liff.init({ liffId: "1655989732-k8bpz5NA" });
         
         if (liff.isLoggedIn()) {
